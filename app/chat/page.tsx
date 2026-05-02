@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Send, Sparkles, Bot, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -35,6 +35,13 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, isTyping]);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -135,6 +142,8 @@ export default function ChatPage() {
                   </div>
                 </div>
               )}
+
+              <div ref={scrollRef} />
             </div>
           </ScrollArea>
 
@@ -159,7 +168,7 @@ export default function ChatPage() {
           <div className="p-4 border-t border-border">
             <form 
               onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-              className="flex gap-2"
+              className="flex gap-2 items-center"
             >
               <Input
                 placeholder="Ask a question..."
@@ -167,7 +176,7 @@ export default function ChatPage() {
                 onChange={(e) => setInput(e.target.value)}
                 className="flex-1"
               />
-              <Button type="submit" className="cursor-pointer">
+              <Button type="submit" size="icon" className="cursor-pointer shrink-0">
                 <Send className="w-4 h-4" />
               </Button>
             </form>
