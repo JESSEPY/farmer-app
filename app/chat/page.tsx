@@ -103,8 +103,8 @@ export default function ChatPage() {
 
         {/* Chat Area */}
         <Card className="flex-1 flex flex-col overflow-hidden">
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
+          <ScrollArea className="flex-1">
+            <div className="p-4 min-h-0 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
