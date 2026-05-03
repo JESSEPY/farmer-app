@@ -10,15 +10,15 @@ const navItemsFarmer = [
   { href: "/farmer/dashboard", label: "Home", icon: Home },
   { href: "/farmer/crops", label: "Crops", icon: Sprout },
   { href: "/farmer/market", label: "Market", icon: Store },
-  { href: "/chat", label: "AI", icon: Sparkles },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/farmer/chat", label: "AI", icon: Sparkles },
+  { href: "/farmer/profile", label: "Profile", icon: User },
 ];
 
 const navItemsBuyer = [
   { href: "/buyer/dashboard", label: "Home", icon: Home },
   { href: "/buyer/market", label: "Market", icon: Store },
-  { href: "/chat", label: "AI", icon: Sparkles },
-  { href: "/profile", label: "Profile", icon: User },
+  { href: "/buyer/chat", label: "AI", icon: Sparkles },
+  { href: "/buyer/profile", label: "Profile", icon: User },
 ];
 
 export function Navigation({ role = "farmer" }: { role?: "farmer" | "buyer" }) {
