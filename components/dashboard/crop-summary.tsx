@@ -40,7 +40,7 @@ export function CropSummary() {
           </Link>
       </CardHeader>
       <CardContent className="space-y-2 px-3 sm:px-4 pb-3 sm:pb-4">
-        {mockCrops.map((crop) => (
+        {mockCrops.slice(0, 2).map((crop) => (
           <div 
             key={crop.id}
             className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 cursor-pointer transition-colors"

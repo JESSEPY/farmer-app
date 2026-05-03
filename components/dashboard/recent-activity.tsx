@@ -60,7 +60,7 @@ export function RecentActivity() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2 px-3 sm:px-4 pb-3 sm:pb-4">
-        {mockActivities.map((activity) => {
+        {mockActivities.slice(0, 2).map((activity) => {
           const { icon: Icon, color } = activityIcons[activity.type];
           return (
             <div 

@@ -20,7 +20,7 @@ export default function Home() {
         </section>
 
         {/* Two Column Layout */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
           {/* Active Crops */}
           <section>
             <CropSummary />
@@ -39,11 +39,11 @@ export default function Home() {
             <p className="text-xs text-muted-foreground">Active Listings</p>
           </div>
           <div className="p-3 sm:p-4 rounded-xl bg-accent/10 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-accent">5</p>
+            <p className="text-xl sm:text-2xl font-bold text-accent-foreground">5</p>
             <p className="text-xs text-muted-foreground">Pending Orders</p>
           </div>
           <div className="p-3 sm:p-4 rounded-xl bg-secondary/10 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-secondary">4.8</p>
+            <p className="text-xl sm:text-2xl font-bold text-secondary-foreground">4.8</p>
             <p className="text-xs text-muted-foreground">Buyer Rating</p>
           </div>
         </section>

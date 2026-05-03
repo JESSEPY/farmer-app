@@ -18,14 +18,14 @@ const actions = [
     icon: ShoppingBag,
     label: "Post Harvest",
     description: "List produce for sale",
-    color: "bg-accent/10 text-accent",
+    color: "bg-accent/10 text-accent-foreground",
   },
   {
     href: "/market",
     icon: Sprout,
     label: "Browse Market",
     description: "Find buyers",
-    color: "bg-secondary/10 text-secondary",
+    color: "bg-secondary/10 text-secondary-foreground",
   },
   {
     href: "/chat",
