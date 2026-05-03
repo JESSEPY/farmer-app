@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { PWARegistration } from "@/components/pwa-registration";
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -35,10 +36,12 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <ThemeProvider>
-          <PWARegistration />
-          <main className="flex-1">
-            {children}
-          </main>
+          <AuthProvider>
+            <PWARegistration />
+            <main className="flex-1">
+              {children}
+            </main>
+          </AuthProvider>
           <Toaster position="top-right" />
         </ThemeProvider>
       </body>
