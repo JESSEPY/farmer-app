@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -26,7 +27,22 @@ export default function LoginPage() {
       setError(error.message);
       setLoading(false);
     } else {
-      router.push("/dashboard");
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        if (profile) {
+          router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+        } else {
+          router.push("/farmer/dashboard");
+        }
+      } else {
+        router.push("/farmer/dashboard");
+      }
     }
   };
 
