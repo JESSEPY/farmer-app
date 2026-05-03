@@ -4,8 +4,9 @@ import { createClient } from "@/lib/supabase/client";
 import { Profile, UserRole } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { signIn as signInUser, signUp as signUpUser, signOut as signOutUser, getCurrentUser } from "@/lib/services/auth-service";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
@@ -24,15 +25,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUser(user as User);
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-        if (profile) setProfile(profile as Profile);
+      const { user, profile, error } = await getCurrentUser();
+      if (user && !error) {
+        setUser(user);
+        setProfile(profile);
       }
       setLoading(false);
     };
@@ -51,34 +47,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error };
-  };
+  const { user, error } = await signInUser(email, password);
+  if (!error && user) {
+    const { profile } = await getCurrentUser();
+    setUser(user);
+    setProfile(profile);
+  }
+  return { error };
+};
 
   const signUp = async (email: string, password: string, role: UserRole, fullName: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-    if (error) return { error };
-
-    if (data.user) {
-      await supabase.from("profiles").insert({
-        id: data.user.id,
-        email,
-        full_name: fullName,
-        role,
-      });
-    }
-    return { error: null };
-  };
+  const { user, error } = await signUpUser(email, password, role, fullName);
+  if (!error && user) {
+    const { profile } = await getCurrentUser();
+    setUser(user);
+    setProfile(profile);
+  }
+  return { error: error || null };
+};
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setProfile(null);
-  };
+  await signOutUser();
+  setUser(null);
+  setProfile(null);
+};
 
   return (
     <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut }}>

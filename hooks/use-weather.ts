@@ -1,9 +1,9 @@
 // hooks/use-weather.ts
 
 import { useState, useCallback, useEffect } from "react";
+import { apiClient } from "@/lib/api/client";
+import { WeatherData } from "@/lib/types/weather";
 import {
-  fetchWeather,
-  WeatherData,
   getWeatherLabel,
   getWeatherIconName,
   formatDay,
@@ -55,7 +55,7 @@ export function useWeather(): UseWeatherResult {
       async (position) => {
         const { latitude, longitude } = position.coords;
         try {
-          const data = await fetchWeather(latitude, longitude);
+          const { data } = await apiClient<{ data: WeatherData }>('weather', { method: 'POST', body: JSON.stringify({ latitude, longitude }) });
           setState({ weather: data, loading: false, error: null });
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : "Failed to fetch weather";
