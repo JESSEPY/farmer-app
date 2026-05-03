@@ -18,17 +18,6 @@ const listings = [
   { id: "6", crop: "Peanut", quantity: 80, price: 45, grade: "A", municipality: "Pilar", farmer: "Carmen Cruz", rating: 4.6 },
 ];
 
-const municipalities = [
-  { name: "Mobo", count: 12, availability: "high" },
-  { name: "Milagros", count: 8, availability: "high" },
-  { name: "Aroroy", count: 5, availability: "medium" },
-  { name: "Baleno", count: 4, availability: "medium" },
-  { name: "Balud", count: 3, availability: "low" },
-  { name: "Cawayan", count: 2, availability: "low" },
-  { name: "Claveria", count: 6, availability: "medium" },
-  { name: "Dapa", count: 1, availability: "low" },
-];
-
 const gradeColors = {
   A: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   B: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
@@ -46,9 +35,9 @@ export default function MarketPage() {
             <p className="text-muted-foreground">Browse and list agricultural products</p>
           </div>
           <Link href="/market/new" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer">
-              <Plus className="w-4 h-4 mr-2" />
-              Post Listing
-            </Link>
+            <Plus className="w-4 h-4 mr-2" />
+            Post Listing
+          </Link>
         </div>
 
         {/* Search and Filters */}
@@ -60,7 +49,7 @@ export default function MarketPage() {
               className="pl-10"
             />
           </div>
-          <Button variant="outline" className="cursor-pointer">
+          <Button variant="outline" size="sm" className="cursor-pointer">
             <Filter className="w-4 h-4 mr-2" />
             Filters
           </Button>

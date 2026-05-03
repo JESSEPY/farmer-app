@@ -24,19 +24,21 @@ export default function CropsPage() {
     <PageContainer>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">My Crops</h1>
             <p className="text-muted-foreground">Manage your fields and plantings</p>
           </div>
-          <Link href="/crops/new" className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer">
+          <Link href="/crops/new" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-auto cursor-pointer">
               <Plus className="w-4 h-4 mr-2" />
               Add Crop
-            </Link>
+            </Button>
+          </Link>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-4 rounded-xl bg-muted/50 text-center">
             <p className="text-xl font-bold">4</p>
             <p className="text-xs text-muted-foreground">Total Crops</p>
@@ -56,11 +58,11 @@ export default function CropsPage() {
         </div>
 
         {/* Crop List */}
-        <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {crops.map((crop) => (
             <Link key={crop.id} href={`/crops/${crop.id}`}>
               <Card className="cursor-pointer hover:bg-muted/50 transition-all duration-200 border border-border/60">
-                <CardContent className="p-3 sm:p-4">
+                <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2 sm:mb-3">
                     <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary/10 flex items-center justify-center">
                       <Sprout className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
@@ -90,7 +92,7 @@ export default function CropsPage() {
           {/* Add New Card */}
           <Link href="/crops/new">
             <Card className="cursor-pointer hover:shadow-md transition-all duration-200 border-dashed border-2 hover:border-primary/50">
-              <CardContent className="p-4 flex flex-col items-center justify-center h-full min-h-[160px]">
+              <CardContent className="p-4 flex flex-col items-center justify-center min-h-[140px]">
                 <Plus className="w-8 h-8 text-muted-foreground mb-2" />
                 <p className="text-muted-foreground font-medium">Add New Crop</p>
               </CardContent>

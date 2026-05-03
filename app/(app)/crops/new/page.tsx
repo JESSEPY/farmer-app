@@ -44,7 +44,6 @@ export default function NewCropPage() {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate submission
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     router.push("/crops");
@@ -53,7 +52,6 @@ export default function NewCropPage() {
   return (
     <PageContainer>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center gap-4">
           <Link 
             href="/crops" 

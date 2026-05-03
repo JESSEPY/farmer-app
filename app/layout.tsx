@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-import { Navigation } from "@/components/layout/nav";
-import { Header } from "@/components/layout/header";
+import { ThemeProvider } from "@/components/layout/theme-provider";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -25,12 +24,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
-        <Navigation />
-        <Header />
-        <main className="flex-1">
-          {children}
-        </main>
-        <Toaster position="top-right" />
+        <ThemeProvider>
+          <main className="flex-1">
+            {children}
+          </main>
+          <Toaster position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );
