@@ -31,7 +31,7 @@ const settings = [
   { icon: Settings, label: "Settings", description: "App preferences" },
 ];
 
-export default function ProfilePage() {
+export default function ProfilePageContent() {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
 
