@@ -6,15 +6,23 @@ import { Home, Sprout, Store, Sparkles, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FloatingNav from "@/components/ui/floating-nav";
 
-const navItems = [
-  { href: "/home", label: "Home", icon: Home },
-  { href: "/crops", label: "Crops", icon: Sprout },
-  { href: "/market", label: "Market", icon: Store },
+const navItemsFarmer = [
+  { href: "/farmer/dashboard", label: "Home", icon: Home },
+  { href: "/farmer/crops", label: "Crops", icon: Sprout },
+  { href: "/farmer/market", label: "Market", icon: Store },
   { href: "/chat", label: "AI", icon: Sparkles },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
-export function Navigation() {
+const navItemsBuyer = [
+  { href: "/buyer/dashboard", label: "Home", icon: Home },
+  { href: "/buyer/market", label: "Market", icon: Store },
+  { href: "/chat", label: "AI", icon: Sparkles },
+  { href: "/profile", label: "Profile", icon: User },
+];
+
+export function Navigation({ role = "farmer" }: { role?: "farmer" | "buyer" }) {
+  const navItems = role === "farmer" ? navItemsFarmer : navItemsBuyer;
   const pathname = usePathname();
 
   return (
