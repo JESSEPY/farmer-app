@@ -1,7 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { User, Profile, UserRole } from "@/lib/supabase/types";
+import { Profile, UserRole } from "@/lib/supabase/types";
+import type { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
 interface AuthContextType {
@@ -91,3 +92,6 @@ export function useAuth() {
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 }
+
+export { type UserRole };
+export type { Profile };
