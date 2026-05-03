@@ -18,7 +18,7 @@ const buyerFeatures = [
 
 export function FeaturesDetail() {
   return (
-    <section id="features" className="py-20 px-6 bg-[#f8f5f0] dark:bg-[#1c2a1f]">
+    <section id="features" className="py-20 px-6">
       <div className="max-w-6xl mx-auto">
         <h2 className="text-3xl font-semibold text-center text-[#3e2723] dark:text-[#f0ebe5] mb-16">
           Features That Work for You

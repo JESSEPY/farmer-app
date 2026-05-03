@@ -27,8 +27,7 @@ export function HeroSection() {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 text-center
-      bg-[#f8f5f0] dark:bg-[#1c2a1f]">
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-6 py-20 text-center">
       
       <motion.div
         variants={containerVariants}
