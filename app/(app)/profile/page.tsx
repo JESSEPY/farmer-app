@@ -1,18 +1,27 @@
 "use client";
 
-import { User, MapPin, ShieldCheck, Star, Settings, Bell, Moon, Languages } from "lucide-react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { MapPin, ShieldCheck, Star, Settings, Bell, Moon, Languages, ShoppingBag } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageContainer } from "@/components/layout/page-container";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 
-const stats = [
+const farmerStats = [
   { label: "Active Crops", value: "4" },
   { label: "Market Listings", value: "12" },
   { label: "Orders Completed", value: "28" },
   { label: "Avg. Rating", value: "4.8" },
+];
+
+const buyerStats = [
+  { label: "Active Orders", value: "3" },
+  { label: "Purchases", value: "15" },
+  { label: "Total Spent", value: "₱12,500" },
+  { label: "Avg. Rating", value: "4.9" },
 ];
 
 const settings = [
@@ -23,6 +32,42 @@ const settings = [
 ];
 
 export default function ProfilePage() {
+  const { user, profile, loading, signOut } = useAuth();
+  const router = useRouter();
+
+  const isFarmer = profile?.role === "farmer";
+  const stats = isFarmer ? farmerStats : buyerStats;
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  const memberSince = profile?.created_at ? new Date(profile.created_at).getFullYear().toString() : "2024";
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/login");
+  };
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center min-h-[50vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </PageContainer>
+    );
+  }
+
+  if (!user) {
+    return (
+      <PageContainer>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+          <p className="text-muted-foreground">Please sign in to view your profile</p>
+          <Button onClick={() => router.push("/login")}>Sign In</Button>
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer>
       <div className="space-y-6 max-w-2xl mx-auto">
@@ -31,22 +76,26 @@ export default function ProfilePage() {
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Avatar className="w-20 h-20">
-                <AvatarFallback className="text-2xl bg-primary/10 text-primary">JD</AvatarFallback>
+                <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                  {initials}
+                </AvatarFallback>
               </Avatar>
               
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <h1 className="text-xl font-bold">Juan Dela Cruz</h1>
+                  <h1 className="text-xl font-bold">{displayName}</h1>
                   <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                     <ShieldCheck className="w-3 h-3 mr-1" />
-                    Verified
+                    {isFarmer ? "Verified Farmer" : "Trusted Buyer"}
                   </Badge>
                 </div>
                 <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground mt-1">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">Mobo, Masbate</span>
+                  <span className="text-sm">{profile?.email}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-2">Farmer since 2015 • 7.5 hectares</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {isFarmer ? "Farmer" : "Buyer"} since {memberSince}
+                </p>
               </div>
 
               <Button variant="outline" className="cursor-pointer">
@@ -71,7 +120,7 @@ export default function ProfilePage() {
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold">Buyer Rating</h3>
+                <h3 className="font-semibold">{isFarmer ? "Farmer Rating" : "Buyer Rating"}</h3>
                 <div className="flex items-center gap-1 mt-1">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <Star 
@@ -83,7 +132,7 @@ export default function ProfilePage() {
                 </div>
               </div>
               <Badge variant="outline" className="text-green-600 border-green-600">
-                Trusted Seller
+                {isFarmer ? "Trusted Seller" : "Verified Buyer"}
               </Badge>
             </div>
           </CardContent>
@@ -115,7 +164,11 @@ export default function ProfilePage() {
         </Card>
 
         {/* Logout */}
-        <Button variant="outline" className="w-full cursor-pointer text-destructive hover:text-destructive">
+        <Button 
+          variant="outline" 
+          className="w-full cursor-pointer text-destructive hover:text-destructive"
+          onClick={handleSignOut}
+        >
           Sign Out
         </Button>
       </div>
