@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { PWARegistration } from "@/components/pwa-registration";
+import { UpdateButton } from "@/components/update-button";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+          <UpdateButton />
           <Toaster position="top-right" />
         </ThemeProvider>
       </body>

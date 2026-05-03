@@ -1,6 +1,22 @@
 // lib/gemini-service.ts
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { SYSTEM_PROMPT, MODEL_CONFIG, Message } from "./prompts/assistant-config";
+
+const apiKey = process.env.GEMINI_API_KEY;
+
+if (!apiKey) {
+  throw new Error("GEMINI_API_KEY is not defined");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey);
+
+const PRIMARY_MODEL = "gemma-4-26b-a4b-it";
+const FALLBACK_MODELS = ["gemini-2.0-flash-lite"];
+
+const GEMINI_MODEL_CHAIN = [PRIMARY_MODEL, ...FALLBACK_MODELS].filter(
+  (model, index, arr) => arr.indexOf(model) === index
+);
 
 export interface GenerateResponseParams {
   messages: Message[];
@@ -8,10 +24,72 @@ export interface GenerateResponseParams {
 
 export interface GeminiResponse {
   content: string;
+  modelUsed?: string;
   error?: string;
 }
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemma-4-26b-a4b-it:generateContent";
+function isGeminiTransientError(error: unknown): boolean {
+  const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  return [
+    "503",
+    "service unavailable",
+    "high demand",
+    "unavailable",
+    "429",
+    "resource_exhausted",
+    "rate limit",
+    "overloaded",
+  ].some((token) => message.includes(token));
+}
+
+function cleanResponse(text: string): string {
+  const lines = text.split("\n");
+  const cleanedLines: string[] = [];
+  let captureMode = false;
+  let foundQuickAnswer = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    const firstChar = trimmed.charAt(0);
+    const firstWord = trimmed.split(" ")[0].toLowerCase();
+
+    if (
+      trimmed.startsWith("*") ||
+      trimmed.startsWith("(") ||
+      firstWord === "user" ||
+      firstWord === "role:" ||
+      firstWord === "goal:" ||
+      firstWord === "constraints:" ||
+      firstWord === "check:" ||
+      firstWord === "drafting" ||
+      firstWord === "refining" ||
+      firstWord === "final" ||
+      firstWord === "wait," ||
+      trimmed.toLowerCase().includes("self-correction") ||
+      trimmed.toLowerCase().includes("internal") ||
+      (trimmed.includes(":") && firstWord !== "🌾" && firstWord !== "📋" && firstWord !== "💡" && firstWord !== "⚠️" && firstWord !== "📅" && !trimmed.startsWith("N:") && !trimmed.startsWith("P:") && !trimmed.startsWith("K:"))
+    ) {
+      if (trimmed.startsWith("🌾 QUICK ANSWER:") || trimmed.startsWith("📋 DETAILS:") || trimmed.startsWith("💡 TIPS:") || trimmed.startsWith("⚠️ IMPORTANT:") || trimmed.startsWith("📅 NEXT STEPS:")) {
+        captureMode = true;
+        foundQuickAnswer = true;
+        cleanedLines.push(trimmed);
+      }
+      continue;
+    }
+
+    if (foundQuickAnswer) {
+      if (trimmed === "") {
+        continue;
+      }
+      cleanedLines.push(trimmed);
+    } else if (trimmed.startsWith("🌾") || trimmed.startsWith("📋") || trimmed.startsWith("💡") || trimmed.startsWith("⚠️") || trimmed.startsWith("📅")) {
+      foundQuickAnswer = true;
+      cleanedLines.push(trimmed);
+    }
+  }
+
+  return cleanedLines.join("\n").trim();
+}
 
 function buildPrompt(messages: Message[]): string {
   const conversation = messages
@@ -21,64 +99,50 @@ function buildPrompt(messages: Message[]): string {
   return `${SYSTEM_PROMPT}\n\nConversation:\n${conversation}\n\nAssistant:`;
 }
 
-export async function generateResponse({ messages }: GenerateResponseParams): Promise<GeminiResponse> {
-  const apiKey = process.env.GEMINI_API_KEY;
+async function generateWithFallback(prompt: string): Promise<{ text: string; modelName: string }> {
+  let lastError: unknown = null;
 
-  if (!apiKey) {
-    return {
-      content: "",
-      error: "API key not configured. Please set GEMINI_API_KEY in your environment.",
-    };
-  }
-
-  try {
-    const prompt = buildPrompt(messages);
-
-    const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }],
-          },
-        ],
+  for (const modelName of GEMINI_MODEL_CHAIN) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
         generationConfig: {
           temperature: MODEL_CONFIG.temperature,
           maxOutputTokens: MODEL_CONFIG.maxOutputTokens,
+          topP: MODEL_CONFIG.topP,
+          topK: MODEL_CONFIG.topK,
         },
-      }),
-    });
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API error:", errorData);
-      return {
-        content: "",
-        error: `API error: ${response.status}`,
-      };
+      const result = await model.generateContent(prompt);
+      return { text: result.response.text().trim(), modelName };
+    } catch (error) {
+      lastError = error;
+      if (isGeminiTransientError(error)) {
+        console.warn(`Model ${modelName} unavailable, trying fallback.`, error);
+        continue;
+      }
+      throw error;
     }
+  }
 
-    const data = await response.json();
+  throw new Error(
+    `All configured models are temporarily unavailable. Last error: ${
+      lastError instanceof Error ? lastError.message : String(lastError)
+    }`
+  );
+}
 
-    if (!data.candidates || !data.candidates[0]?.content?.parts?.[0]?.text) {
-      return {
-        content: "",
-        error: "Invalid response format from API",
-      };
-    }
+export async function generateResponse({ messages }: GenerateResponseParams): Promise<GeminiResponse> {
+  try {
+    const prompt = buildPrompt(messages);
+    const { text, modelName } = await generateWithFallback(prompt);
+    const cleanedText = cleanResponse(text);
 
-    return {
-      content: data.candidates[0].content.parts[0].text,
-    };
+    return { content: cleanedText, modelUsed: modelName };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
     console.error("Gemini service error:", errorMessage);
-    return {
-      content: "",
-      error: errorMessage,
-    };
+    return { content: "", error: errorMessage };
   }
 }
