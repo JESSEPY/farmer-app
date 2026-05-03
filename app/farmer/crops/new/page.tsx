@@ -13,9 +13,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { PageContainer } from "@/components/layout/page-container";
 
 const cropTypes = [
-  "Rice (Palay)", "Corn", "Coconut", "Cassava", "Sweet Potato",
-  "Peanut", "Mongo", "Tomato", "Eggplant", "Pepper", "Okra", "Squash",
-  "Banana", "Papaya", "Watermelon", "Livestock (Chicken)", "Livestock (Pig)",
+  "Rice (Palay)",
+  "Corn",
+  "Coconut",
+  "Cassava",
+  "Sweet Potato",
+  "Peanut",
+  "Mongo (Mung Bean)",
+  "Tomato",
+  "Eggplant",
+  "Pepper",
+  "Okra",
+  "Squash",
+  "Banana",
+  "Papaya",
+  "Watermelon",
 ];
 
 const municipalities = [
@@ -24,7 +36,7 @@ const municipalities = [
   "San Fernando", "San Jose", "Uson"
 ];
 
-export default function NewListingPage() {
+export default function NewCropPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +46,7 @@ export default function NewListingPage() {
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    router.push("/farmer/market");
+    router.push("/farmer/crops");
   };
 
   return (
@@ -42,29 +54,38 @@ export default function NewListingPage() {
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Link 
-            href="/farmer/market" 
+            href="/farmer/crops" 
             className="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold">Post New Listing</h1>
-            <p className="text-muted-foreground">List your produce for sale</p>
+            <h1 className="text-2xl font-bold">Add New Crop</h1>
+            <p className="text-muted-foreground">Register a new field or planting</p>
           </div>
         </div>
 
         <form onSubmit={handleSubmit}>
           <Card>
             <CardHeader>
-              <CardTitle>Commodity Details</CardTitle>
+              <CardTitle>Field Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="cropType">Crop/Commodity *</Label>
+                  <Label htmlFor="fieldName">Field Name *</Label>
+                  <Input 
+                    id="fieldName" 
+                    placeholder="e.g., North Field, East Lot" 
+                    required 
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="cropType">Crop Type *</Label>
                   <Select required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select commodity" />
+                      <SelectValue placeholder="Select crop type" />
                     </SelectTrigger>
                     <SelectContent>
                       {cropTypes.map((crop) => (
@@ -75,7 +96,7 @@ export default function NewListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="municipality">Location *</Label>
+                  <Label htmlFor="municipality">Municipality *</Label>
                   <Select required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select municipality" />
@@ -89,56 +110,40 @@ export default function NewListingPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="quantity">Quantity (kg) *</Label>
+                  <Label htmlFor="area">Area (hectares) *</Label>
                   <Input 
-                    id="quantity" 
+                    id="area" 
                     type="number" 
-                    min="1" 
-                    placeholder="e.g., 500" 
+                    step="0.1" 
+                    min="0.1" 
+                    placeholder="e.g., 2.5" 
                     required 
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price per kg (PHP) *</Label>
+                  <Label htmlFor="plantingDate">Planting Date *</Label>
                   <Input 
-                    id="price" 
-                    type="number" 
-                    min="1" 
-                    step="0.01"
-                    placeholder="e.g., 22.00" 
+                    id="plantingDate" 
+                    type="date" 
                     required 
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="grade">Quality Grade *</Label>
-                  <Select required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select grade" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="A">Grade A (Premium)</SelectItem>
-                      <SelectItem value="B">Grade B (Standard)</SelectItem>
-                      <SelectItem value="C">Grade C (Economy)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="harvestDate">Harvest Date</Label>
+                  <Label htmlFor="expectedHarvest">Expected Harvest</Label>
                   <Input 
-                    id="harvestDate" 
+                    id="expectedHarvest" 
                     type="date" 
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="notes">Notes</Label>
                 <Textarea 
-                  id="description" 
-                  placeholder="Describe your product quality, variety, freshness..." 
+                  id="notes" 
+                  placeholder="Any additional information about this field..." 
                   rows={3}
                 />
               </div>
@@ -146,16 +151,16 @@ export default function NewListingPage() {
           </Card>
 
           <div className="flex gap-3 mt-4">
-            <Link href="/farmer/market" className="inline-flex h-10 px-4 py-2 items-center justify-center rounded-md border border-input bg-background hover:bg-muted cursor-pointer">
+            <Link href="/farmer/crops" className="inline-flex h-10 px-4 py-2 items-center justify-center rounded-md border border-input bg-background hover:bg-muted cursor-pointer">
               Cancel
             </Link>
             <Button type="submit" disabled={isSubmitting} className="cursor-pointer">
               {isSubmitting ? (
-                <>Posting...</>
+                <>Saving...</>
               ) : (
                 <>
                   <Plus className="w-4 h-4 mr-2" />
-                  Post Listing
+                  Add Crop
                 </>
               )}
             </Button>

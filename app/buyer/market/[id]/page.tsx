@@ -56,7 +56,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link 
-            href="/farmer/market" 
+            href="/buyer/market" 
             className="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -192,7 +192,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
             {listing.similarListings.map((item) => (
               <Link 
                 key={item.id} 
-                href={`/farmer/market/${item.id}`}
+                href={`/buyer/market/${item.id}`}
                 className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted cursor-pointer transition-colors"
               >
                 <div>
