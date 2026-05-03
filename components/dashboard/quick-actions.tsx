@@ -7,28 +7,28 @@ import { cn } from "@/lib/utils";
 
 const actions = [
   {
-    href: "/crops/new",
+    href: "/farmer/crops/new",
     icon: Plus,
     label: "Add Crop",
     description: "Register new field",
     color: "bg-primary/10 text-primary",
   },
   {
-    href: "/market/new",
+    href: "/farmer/market/new",
     icon: ShoppingBag,
     label: "Post Harvest",
     description: "List produce for sale",
     color: "bg-accent/10 text-accent-foreground",
   },
   {
-    href: "/market",
+    href: "/farmer/market",
     icon: Sprout,
     label: "Browse Market",
     description: "Find buyers",
     color: "bg-secondary/10 text-secondary-foreground",
   },
   {
-    href: "/chat",
+    href: "/farmer/chat",
     icon: Sparkles,
     label: "Ask AI",
     description: "Get farming advice",

@@ -12,16 +12,23 @@ interface NavItem {
   icon: React.ReactNode;
 }
 
-const navItems: NavItem[] = [
-  { href: "/home", label: "Home", icon: <Home size={22} /> },
-  { href: "/crops", label: "Crops", icon: <Sprout size={22} /> },
-  { href: "/market", label: "Market", icon: <Store size={22} /> },
-  { href: "/chat", label: "AI", icon: <Sparkles size={22} /> },
-  { href: "/profile", label: "Profile", icon: <User size={22} /> },
+const farmerNavItems: NavItem[] = [
+  { href: "/farmer/dashboard", label: "Home", icon: <Home size={22} /> },
+  { href: "/farmer/crops", label: "Crops", icon: <Sprout size={22} /> },
+  { href: "/farmer/market", label: "Market", icon: <Store size={22} /> },
+  { href: "/farmer/chat", label: "AI", icon: <Sparkles size={22} /> },
+  { href: "/farmer/profile", label: "Profile", icon: <User size={22} /> },
 ];
 
-const FloatingNav = () => {
+const buyerNavItems: NavItem[] = [
+  { href: "/buyer/dashboard", label: "Home", icon: <Home size={22} /> },
+  { href: "/buyer/market", label: "Market", icon: <Store size={22} /> },
+  { href: "/buyer/profile", label: "Profile", icon: <User size={22} /> },
+];
+
+const FloatingNav = ({ role = "farmer" }: { role?: "farmer" | "buyer" }) => {
   const pathname = usePathname();
+  const navItems = role === "farmer" ? farmerNavItems : buyerNavItems;
   const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const btnRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -34,8 +41,8 @@ const FloatingNav = () => {
   const activeIndex = navItems.findIndex(
     (item) =>
       pathname === item.href ||
-      (item.href === "/home" && pathname === "/") ||
-      (item.href !== "/home" && pathname.startsWith(item.href))
+      (item.href === "/farmer/dashboard" && pathname === "/farmer/dashboard") ||
+      (item.href !== "/farmer/dashboard" && pathname.startsWith(item.href))
   );
 
   useEffect(() => {
@@ -68,8 +75,8 @@ const FloatingNav = () => {
         {navItems.map((item, index) => {
           const isActive =
             pathname === item.href ||
-            (item.href === "/home" && pathname === "/") ||
-            (item.href !== "/home" && pathname.startsWith(item.href));
+            (item.href === "/farmer/dashboard" && pathname === "/farmer/dashboard") ||
+            (item.href !== "/farmer/dashboard" && pathname.startsWith(item.href));
 
           return (
             <Link
@@ -97,3 +104,4 @@ const FloatingNav = () => {
 };
 
 export default FloatingNav;
+export { farmerNavItems, buyerNavItems };

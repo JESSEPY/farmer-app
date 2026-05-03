@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth, UserRole } from "@/components/auth/auth-provider";
@@ -16,8 +16,14 @@ export default function SignupPage() {
   const [role, setRole] = useState<UserRole>("farmer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signUp } = useAuth();
+  const { signUp, profile, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    if (!authLoading && profile) {
+      router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+    }
+  }, [profile, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +34,11 @@ export default function SignupPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      router.push(role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+      return;
     }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+    router.push(role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
   };
 
   return (

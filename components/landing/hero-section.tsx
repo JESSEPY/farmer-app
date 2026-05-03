@@ -66,7 +66,7 @@ export function HeroSection() {
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" className="bg-[#2e7d32] hover:bg-[#388e3c] text-white 
             dark:bg-[#4caf50] dark:hover:bg-[#66bb6a] dark:text-[#0a1f0c]">
-            <Link href="/home" className="flex items-center">
+            <Link href="/signup" className="flex items-center">
               Get Started <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
           </Button>

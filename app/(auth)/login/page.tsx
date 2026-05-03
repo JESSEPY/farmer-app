@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -14,8 +14,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, profile, loading: authLoading } = useAuth();
   const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (!authLoading && profile) {
+      router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+    }
+  }, [profile, authLoading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,24 +33,28 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        if (profile) {
-          router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
-        } else {
-          router.push("/farmer/dashboard");
-        }
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+
+      if (!profileError && profile) {
+        router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
       } else {
         router.push("/farmer/dashboard");
       }
+    } else {
+      setError("Authentication failed. Please try again.");
     }
+    setLoading(false);
   };
 
   return (

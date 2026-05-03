@@ -17,7 +17,6 @@ const navItemsFarmer = [
 const navItemsBuyer = [
   { href: "/buyer/dashboard", label: "Home", icon: Home },
   { href: "/buyer/market", label: "Market", icon: Store },
-  { href: "/buyer/chat", label: "AI", icon: Sparkles },
   { href: "/buyer/profile", label: "Profile", icon: User },
 ];
 
