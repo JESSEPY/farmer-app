@@ -24,6 +24,7 @@ export default function MyListingsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
+  const [fetchError, setFetchError] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState<{ open: boolean; id: string; title: string }>({
     open: false,
     id: "",
@@ -32,15 +33,18 @@ export default function MyListingsPage() {
 
   const fetchListings = async () => {
     setLoading(true);
+    setFetchError(false);
     try {
       const res = await fetch("/api/listings/mine");
       if (!res.ok) {
+        setFetchError(true);
         toast.error("Failed to fetch listings");
         return;
       }
       const data = await res.json();
       setListings(data.listings || []);
     } catch {
+      setFetchError(true);
       toast.error("Failed to fetch listings");
     } finally {
       setLoading(false);
@@ -53,7 +57,12 @@ export default function MyListingsPage() {
 
   const filteredListings = listings.filter((item: any) => {
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
-    const matchesSearch = item.crop.toLowerCase().includes(search.toLowerCase());
+    const searchTerm = search.toLowerCase();
+    const matchesSearch =
+      !searchTerm ||
+      item.crop.toLowerCase().includes(searchTerm) ||
+      item.municipality.toLowerCase().includes(searchTerm) ||
+      (item.description || "").toLowerCase().includes(searchTerm);
     return matchesStatus && matchesSearch;
   });
 
@@ -103,6 +112,13 @@ export default function MyListingsPage() {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Loading your listings...</p>
               </div>
+            ) : fetchError ? (
+              <div className="text-center py-12">
+                <p className="text-destructive mb-2">Failed to load listings</p>
+                <Button variant="outline" onClick={fetchListings} className="cursor-pointer">
+                  Try Again
+                </Button>
+              </div>
             ) : filteredListings.length === 0 ? (
               <div className="text-center py-12">
                 <p className="text-muted-foreground">
@@ -110,7 +126,7 @@ export default function MyListingsPage() {
                     ? "No active listings"
                     : statusFilter === "archived"
                       ? "No archived listings"
-                      : "No listings found"}
+                      : "You haven't posted any listings yet"}
                 </p>
                 <Link
                   href="/farmer/market/new"

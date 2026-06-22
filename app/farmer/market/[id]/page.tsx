@@ -60,6 +60,8 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   const [editGrade, setEditGrade] = useState("");
   const [editHarvestDate, setEditHarvestDate] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [removedPhotos, setRemovedPhotos] = useState<string[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -80,7 +82,13 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("edit") === "true" && listing) {
-      populateEditFields(listing);
+      setEditCrop(listing.crop || "");
+      setEditMunicipality(listing.municipality || "");
+      setEditQuantity(listing.quantity || "");
+      setEditPrice(listing.price?.toString() || "");
+      setEditGrade(listing.grade || "");
+      setEditHarvestDate(listing.harvest_date || "");
+      setEditDescription(listing.description || "");
       setIsEditing(true);
     }
   }, [listing]);
@@ -101,8 +109,10 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const cancelEditing = () => {
+    populateEditFields(listing);
     setIsEditing(false);
     setEditPhotos([]);
+    setRemovedPhotos([]);
   };
 
   const handleSave = async () => {
@@ -110,6 +120,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
       toast.error("Please fill in all required fields");
       return;
     }
+    setIsSaving(true);
     try {
       const formData = new FormData();
       formData.append("crop", editCrop);
@@ -120,6 +131,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
       if (editHarvestDate) formData.append("harvest_date", editHarvestDate);
       if (editDescription) formData.append("description", editDescription);
       editPhotos.forEach((photo) => formData.append("photos", photo));
+      removedPhotos.forEach((url) => formData.append("photos_to_remove", url));
 
       const res = await fetch(`/api/listings/${id}`, {
         method: "PUT",
@@ -135,30 +147,20 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
       setListing(data.listing);
       setIsEditing(false);
       setEditPhotos([]);
+      setRemovedPhotos([]);
       toast.success("Listing updated successfully");
     } catch {
       toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const handleRemovePhoto = async (index: number) => {
+  const handleRemovePhoto = (index: number) => {
     const removedUrl = listing.photos[index];
     const updatedPhotos = listing.photos.filter((_: any, i: number) => i !== index);
     setListing({ ...listing, photos: updatedPhotos });
-    try {
-      const formData = new FormData();
-      formData.append("photos_to_remove", JSON.stringify([removedUrl]));
-      const res = await fetch(`/api/listings/${id}`, {
-        method: "PUT",
-        body: formData,
-      });
-      if (!res.ok) {
-        setListing((prev: any) => ({ ...prev, photos: [...prev.photos, removedUrl] }));
-        toast.error("Failed to remove photo");
-      }
-    } catch {
-      toast.error("Failed to remove photo");
-    }
+    setRemovedPhotos((prev) => [...prev, removedUrl]);
   };
 
   if (loading) {
@@ -324,9 +326,9 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                   <X className="w-4 h-4 mr-2" />
                   Cancel
                 </Button>
-                <Button onClick={handleSave} className="cursor-pointer">
+                <Button onClick={handleSave} disabled={isSaving} className="cursor-pointer">
                   <Check className="w-4 h-4 mr-2" />
-                  Save Changes
+                  {isSaving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </CardContent>
@@ -429,20 +431,6 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
             Send Message
           </Button>
         </div>
-
-        {user?.id === listing.farmer_id && !isEditing && (
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowArchiveDialog(true)}
-              className="cursor-pointer text-destructive hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Archive this listing
-            </Button>
-          </div>
-        )}
 
         <DeleteListingDialog
           open={showArchiveDialog}
