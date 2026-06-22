@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Sprout, Store, Sparkles, User } from "lucide-react";
+import { Home, Sprout, Store, Sparkles, User, Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import FloatingNav from "@/components/ui/floating-nav";
 
@@ -10,6 +10,7 @@ const navItemsFarmer = [
   { href: "/farmer/dashboard", label: "Home", icon: Home },
   { href: "/farmer/crops", label: "Crops", icon: Sprout },
   { href: "/farmer/market", label: "Market", icon: Store },
+  { href: "/farmer/market/mine", label: "My Listings", icon: Package },
   { href: "/farmer/chat", label: "AI", icon: Sparkles },
   { href: "/farmer/profile", label: "Profile", icon: User },
 ];
