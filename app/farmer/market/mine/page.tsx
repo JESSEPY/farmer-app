@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/layout/page-container";
 import { DeleteListingDialog } from "@/components/market/delete-listing-dialog";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const gradeColors: Record<string, string> = {
   A: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
@@ -33,10 +34,14 @@ export default function MyListingsPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/listings/mine");
+      if (!res.ok) {
+        toast.error("Failed to fetch listings");
+        return;
+      }
       const data = await res.json();
       setListings(data.listings || []);
     } catch {
-      console.error("Failed to fetch listings");
+      toast.error("Failed to fetch listings");
     } finally {
       setLoading(false);
     }
