@@ -13,25 +13,10 @@ export async function signUp(email: string, password: string, role: UserRole, fu
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName } },
+    options: { data: { full_name: fullName, role } },
   });
 
-  if (error || !data.user) {
-    return { user: null, error: error || new Error("Signup failed") };
-  }
-
-  const { error: profileError } = await supabase.from("profiles").insert({
-    id: data.user.id,
-    email,
-    full_name: fullName,
-    role,
-  });
-
-  if (profileError) {
-    return { user: data.user, error: profileError };
-  }
-
-  return { user: data.user, error: null };
+  return { user: data?.user || null, error };
 }
 
 export async function signOut(): Promise<{ error: Error | null }> {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MapPin, Settings, Bell, Moon, Languages, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -10,8 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { PageContainer } from "@/components/layout/page-container";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
-const buyerStats = [
-  { label: "Orders", value: "12" },
+const defaultBuyerStats = [
+  { label: "Available Listings", value: "12" },
   { label: "Favorites", value: "5" },
   { label: "Reviews", value: "8" },
   { label: "Spent", value: "$240" },
@@ -27,6 +27,15 @@ const settings = [
 export default function BuyerProfilePage() {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
+
+  const [totalListings, setTotalListings] = useState("12");
+
+  useEffect(() => {
+    fetch("/api/listings")
+      .then((res) => res.json())
+      .then((data) => setTotalListings(String(data.listings?.length || 0)))
+      .catch(() => {});
+  }, []);
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
   const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
@@ -46,6 +55,10 @@ export default function BuyerProfilePage() {
     await signOut();
     router.push("/login");
   };
+
+  const buyerStats = defaultBuyerStats.map((s) =>
+    s.label === "Available Listings" ? { ...s, value: totalListings } : s
+  );
 
   if (loading || !profile || profile.role !== "buyer") {
     return (

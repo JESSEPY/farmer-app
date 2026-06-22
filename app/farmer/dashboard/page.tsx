@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { WeatherWidget } from "@/components/dashboard/weather-widget";
 import { QuickActions } from "@/components/dashboard/quick-actions";
 import { CropSummary } from "@/components/dashboard/crop-summary";
@@ -7,6 +8,18 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { PageContainer } from "@/components/layout/page-container";
 
 export default function FarmerDashboard() {
+  const [activeListings, setActiveListings] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/listings/mine")
+      .then((res) => res.json())
+      .then((data) => {
+        const active = (data.listings || []).filter((l: any) => l.status === "active").length;
+        setActiveListings(active);
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <PageContainer>
       <div className="space-y-5 sm:space-y-6">
@@ -31,7 +44,7 @@ export default function FarmerDashboard() {
 
         <section className="grid grid-cols-3 gap-2 sm:gap-4">
           <div className="p-3 sm:p-4 rounded-xl bg-primary/10 text-center">
-            <p className="text-xl sm:text-2xl font-bold text-primary">12</p>
+            <p className="text-xl sm:text-2xl font-bold text-primary">{activeListings}</p>
             <p className="text-xs text-muted-foreground">Active Listings</p>
           </div>
           <div className="p-3 sm:p-4 rounded-xl bg-accent/10 text-center">

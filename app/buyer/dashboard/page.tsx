@@ -1,10 +1,20 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Store, TrendingUp, Star } from "lucide-react";
 import { PageContainer } from "@/components/layout/page-container";
 
 export default function BuyerDashboard() {
+  const [totalListings, setTotalListings] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/listings")
+      .then((res) => res.json())
+      .then((data) => setTotalListings(data.listings?.length || 0))
+      .catch(() => {});
+  }, []);
+
   return (
     <PageContainer>
       <div className="space-y-6">
@@ -24,8 +34,8 @@ export default function BuyerDashboard() {
           </Link>
           <div className="p-4 rounded-xl bg-accent/10 text-center">
             <TrendingUp className="w-6 h-6 mx-auto mb-2 text-accent-foreground" />
-            <p className="font-bold">3</p>
-            <p className="text-xs text-muted-foreground">Active Orders</p>
+            <p className="font-bold">{totalListings}</p>
+            <p className="text-xs text-muted-foreground">Available Listings</p>
           </div>
           <div className="p-4 rounded-xl bg-secondary/10 text-center">
             <Star className="w-6 h-6 mx-auto mb-2 text-secondary-foreground" />
