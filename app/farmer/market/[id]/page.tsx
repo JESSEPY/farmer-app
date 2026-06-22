@@ -106,6 +106,10 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const handleSave = async () => {
+    if (!editCrop || !editMunicipality || !editQuantity || !editPrice || !editGrade) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append("crop", editCrop);
@@ -138,17 +142,18 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const handleRemovePhoto = async (index: number) => {
+    const removedUrl = listing.photos[index];
     const updatedPhotos = listing.photos.filter((_: any, i: number) => i !== index);
     setListing({ ...listing, photos: updatedPhotos });
     try {
       const formData = new FormData();
-      formData.append("photos_to_remove", JSON.stringify([listing.photos[index]]));
+      formData.append("photos_to_remove", JSON.stringify([removedUrl]));
       const res = await fetch(`/api/listings/${id}`, {
         method: "PUT",
         body: formData,
       });
       if (!res.ok) {
-        setListing((prev: any) => ({ ...prev, photos: [...prev.photos, listing.photos[index]] }));
+        setListing((prev: any) => ({ ...prev, photos: [...prev.photos, removedUrl] }));
         toast.error("Failed to remove photo");
       }
     } catch {
