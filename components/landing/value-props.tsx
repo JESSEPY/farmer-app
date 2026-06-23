@@ -34,8 +34,8 @@ export function ValueProps() {
 
         <div className="grid md:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <Card key={index} className="p-6 bg-white dark:bg-[#2d3a2e] border-[#e0d6c9] dark:border-[#3e4a3d]
-              hover:shadow-lg transition-shadow duration-300">
+            <Card key={index} className="p-6 border-[#e0d6c9] dark:border-[#3e4a3d]
+              hover:ring-2 hover:ring-[#2e7d32]/20 dark:hover:ring-[#4caf50]/20 transition-all duration-300">
               <div className="w-12 h-12 rounded-xl bg-[#2e7d32]/10 dark:bg-[#4caf50]/20 flex items-center justify-center mb-4">
                 <feature.icon className="w-6 h-6 text-[#2e7d32] dark:text-[#4caf50]" />
               </div>

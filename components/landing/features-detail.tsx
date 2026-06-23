@@ -33,7 +33,7 @@ export function FeaturesDetail() {
             </h3>
             <div className="space-y-4">
               {farmerFeatures.map((feature, index) => (
-                <div key={index} className="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#2d3a2e] 
+                <div key={index} className="flex gap-4 p-4 rounded-xl bg-card 
                   border border-[#e0d6c9] dark:border-[#3e4a3d]">
                   <div className="w-10 h-10 rounded-lg bg-[#2e7d32]/10 dark:bg-[#4caf50]/20 flex items-center justify-center shrink-0">
                     <feature.icon className="w-5 h-5 text-[#2e7d32] dark:text-[#4caf50]" />
@@ -55,7 +55,7 @@ export function FeaturesDetail() {
             </h3>
             <div className="space-y-4">
               {buyerFeatures.map((feature, index) => (
-                <div key={index} className="flex gap-4 p-4 rounded-xl bg-white dark:bg-[#2d3a2e] 
+                <div key={index} className="flex gap-4 p-4 rounded-xl bg-card
                   border border-[#e0d6c9] dark:border-[#3e4a3d]">
                   <div className="w-10 h-10 rounded-lg bg-[#2e7d32]/10 dark:bg-[#4caf50]/20 flex items-center justify-center shrink-0">
                     <feature.icon className="w-5 h-5 text-[#2e7d32] dark:text-[#4caf50]" />

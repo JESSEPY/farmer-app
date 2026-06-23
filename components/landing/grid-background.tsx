@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { 
   motion, 
   useMotionValue, 
-  useTransform, 
   useMotionTemplate, 
-  useAnimationFrame 
+  useAnimationFrame,
+  useReducedMotion,
+  type MotionValue,
 } from "framer-motion";
 
 interface GridBackgroundProps {
@@ -15,11 +16,13 @@ interface GridBackgroundProps {
 
 export function GridBackground({ children }: GridBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (prefersReducedMotion) return;
     const { left, top } = e.currentTarget.getBoundingClientRect();
     mouseX.set(e.clientX - left);
     mouseY.set(e.clientY - top);
@@ -32,6 +35,7 @@ export function GridBackground({ children }: GridBackgroundProps) {
   const speedY = 0.3;
 
   useAnimationFrame(() => {
+    if (prefersReducedMotion) return;
     const currentX = gridOffsetX.get();
     const currentY = gridOffsetY.get();
     gridOffsetX.set((currentX + speedX) % 40);
@@ -54,7 +58,7 @@ export function GridBackground({ children }: GridBackgroundProps) {
       {/* Interactive grid layer - follows cursor */}
       <motion.div 
         className="absolute inset-0 z-0 opacity-40"
-        style={{ maskImage, WebkitMaskImage: maskImage }}
+        style={prefersReducedMotion ? {} : { maskImage, WebkitMaskImage: maskImage }}
       >
         <GridPattern offsetX={gridOffsetX} offsetY={gridOffsetY} />
       </motion.div>
@@ -77,7 +81,7 @@ export function GridBackground({ children }: GridBackgroundProps) {
   );
 }
 
-const GridPattern = ({ offsetX, offsetY }: { offsetX: any, offsetY: any }) => {
+const GridPattern = ({ offsetX, offsetY }: { offsetX: MotionValue<number>, offsetY: MotionValue<number> }) => {
   return (
     <svg className="w-full h-full">
       <defs>
