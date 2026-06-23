@@ -2,22 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, Search, Store, MapPin, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { PageContainer } from "@/components/layout/page-container";
+import { ListingCard } from "@/components/market/listing-card";
+import { ListingCardSkeleton } from "@/components/market/listing-card-skeleton";
 import { DeleteListingDialog } from "@/components/market/delete-listing-dialog";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
-const gradeColors: Record<string, string> = {
-  A: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  B: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  C: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
-};
 
 export default function MyListingsPage() {
   const [listings, setListings] = useState<any[]>([]);
@@ -76,7 +69,7 @@ export default function MyListingsPage() {
           </div>
           <Link
             href="/farmer/market/new"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4 mr-2" />
             Post New Listing
@@ -109,8 +102,10 @@ export default function MyListingsPage() {
 
           <TabsContent value={statusFilter} className="mt-4">
             {loading ? (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">Loading your listings...</p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <ListingCardSkeleton key={i} />
+                ))}
               </div>
             ) : fetchError ? (
               <div className="text-center py-12">
@@ -121,103 +116,78 @@ export default function MyListingsPage() {
               </div>
             ) : filteredListings.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  {statusFilter === "active"
-                    ? "No active listings"
-                    : statusFilter === "archived"
-                      ? "No archived listings"
-                      : "You haven't posted any listings yet"}
-                </p>
-                <Link
-                  href="/farmer/market/new"
-                  className="text-primary hover:underline text-sm"
-                >
-                  Post your first listing
-                </Link>
+                <div className="max-w-sm mx-auto space-y-3">
+                  <p className="text-muted-foreground">
+                    {statusFilter === "active"
+                      ? "No active listings"
+                      : statusFilter === "archived"
+                        ? "No archived listings"
+                        : "You haven't posted any listings yet"}
+                  </p>
+                  {(statusFilter === "all" || statusFilter === "active") ? (
+                    <Link href="/farmer/market/new" className="text-primary hover:underline text-sm">
+                      Post your first listing
+                    </Link>
+                  ) : statusFilter === "archived" ? (
+                    <button
+                      onClick={() => setStatusFilter("all")}
+                      className="text-primary hover:underline text-sm cursor-pointer"
+                    >
+                      View all listings
+                    </button>
+                  ) : null}
+                </div>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredListings.map((item: any) => (
-                  <Card key={item.id} className="h-full">
-                    {item.photos?.length > 0 && (
-                      <div className="relative h-36 overflow-hidden rounded-t-lg">
-                        <img
-                          src={item.photos[0]}
-                          alt={item.crop}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
-                    <CardContent className="p-3 sm:p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-lg truncate">{item.crop}</h3>
-                          <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
-                            <Store className="w-4 h-4 shrink-0" />
-                            <span className="truncate">Your listing</span>
-                          </div>
-                        </div>
-                        <Badge
-                          variant="secondary"
-                          className={cn(
-                            "text-xs shrink-0",
-                            item.status === "active"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
-                          )}
-                        >
-                          {item.status === "active" ? "Active" : "Archived"}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                        <MapPin className="w-4 h-4 shrink-0" />
-                        <span>{item.municipality}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="font-bold text-primary">₱{item.price}/kg</p>
-                          <p className="text-xs text-muted-foreground">{item.quantity} available</p>
-                        </div>
-                        <Badge variant="secondary" className={cn("text-xs", gradeColors[item.grade] || gradeColors.A)}>
-                          Grade {item.grade}
-                        </Badge>
-                      </div>
-
-                      <div className="flex gap-2 mt-4 pt-3 border-t border-border">
-                        <Link
-                          href={`/farmer/market/${item.id}?edit=true`}
-                          className="inline-flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted h-9 px-3 text-sm cursor-pointer flex-1"
-                        >
-                          <Pencil className="w-4 h-4 mr-1" />
-                          Edit
-                        </Link>
-                        {item.status === "active" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setDeleteDialog({
-                                open: true,
-                                id: item.id,
-                                title: item.crop,
-                              })
-                            }
-                            className="cursor-pointer text-destructive hover:text-destructive flex-1"
+              <>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"} found
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredListings.map((item: any) => (
+                    <ListingCard
+                      key={item.id}
+                      id={item.id}
+                      crop={item.crop}
+                      quantity={item.quantity}
+                      price={item.price}
+                      grade={item.grade}
+                      municipality={item.municipality}
+                      photos={item.photos || []}
+                      farmerName="Your listing"
+                      status={item.status}
+                      actions={
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/farmer/market/${item.id}?edit=true`}
+                            className="inline-flex items-center justify-center rounded-md border border-input bg-background hover:bg-muted h-9 px-3 text-sm cursor-pointer flex-1"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Archive
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                            <Pencil className="w-4 h-4 mr-1" />
+                            Edit
+                          </Link>
+                          {item.status === "active" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                setDeleteDialog({
+                                  open: true,
+                                  id: item.id,
+                                  title: item.crop,
+                                })
+                              }
+                              className="cursor-pointer text-destructive hover:text-destructive flex-1"
+                            >
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Archive
+                            </Button>
+                          )}
+                        </div>
+                      }
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </TabsContent>
         </Tabs>

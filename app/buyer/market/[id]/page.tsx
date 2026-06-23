@@ -46,8 +46,26 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading listing...</p>
+        <div className="space-y-6 max-w-3xl mx-auto animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-md bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-7 bg-muted rounded w-48" />
+              <div className="h-4 bg-muted rounded w-32" />
+            </div>
+            <div className="h-5 bg-muted rounded w-16" />
+          </div>
+          <div className="h-48 sm:h-64 rounded-lg bg-muted" />
+          <div className="h-28 rounded-xl bg-muted" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="h-28 rounded-xl bg-muted" />
+            <div className="h-28 rounded-xl bg-muted" />
+          </div>
+          <div className="h-36 rounded-xl bg-muted" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="h-10 rounded-md bg-muted" />
+            <div className="h-10 rounded-md bg-muted" />
+          </div>
         </div>
       </PageContainer>
     );
@@ -57,8 +75,11 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
     return (
       <PageContainer>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Listing not found</p>
-          <Link href="/buyer/market" className="text-primary hover:underline text-sm">Back to market</Link>
+          <div className="max-w-sm mx-auto space-y-3">
+            <p className="text-muted-foreground">This listing could not be found</p>
+            <p className="text-xs text-muted-foreground">It may have been archived or removed by the seller.</p>
+            <Link href="/buyer/market" className="text-primary hover:underline text-sm inline-block">Back to market</Link>
+          </div>
         </div>
       </PageContainer>
     );
@@ -70,6 +91,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
         <div className="flex items-center gap-4">
           <Link
             href="/buyer/market"
+            aria-label="Back to market"
             className="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -148,15 +170,15 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                 </AvatarFallback>
               </Avatar>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-semibold">{listing.farmer?.full_name || "Farmer"}</p>
-                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300">
+                  <p className="font-semibold truncate">{listing.farmer?.full_name || "Farmer"}</p>
+                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-900 dark:text-green-300 shrink-0">
                     <ShieldCheck className="w-3 h-3 mr-1" />
                     Verified
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{listing.farmer?.email}</p>
+                <p className="text-xs text-muted-foreground mt-1 truncate">{listing.farmer?.email}</p>
               </div>
             </div>
           </CardContent>

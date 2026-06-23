@@ -42,47 +42,50 @@ function isGeminiTransientError(error: unknown): boolean {
   ].some((token) => message.includes(token));
 }
 
-function cleanResponse(text: string): string {
+export function cleanResponse(text: string): string {
   const lines = text.split("\n");
   const cleanedLines: string[] = [];
-  let captureMode = false;
   let foundQuickAnswer = false;
+
+  const internalPrefixes = [
+    "*", "(", "user:", "role:", "goal:", "constraints:",
+    "check:", "drafting", "refining", "final", "wait,",
+  ];
+
+  const isInternalLine = (line: string): boolean => {
+    const lower = line.toLowerCase();
+    if (internalPrefixes.some((p) => lower.startsWith(p))) return true;
+    if (lower.includes("self-correction") || lower.includes("internal")) return true;
+    return false;
+  };
 
   for (const line of lines) {
     const trimmed = line.trim();
-    const firstChar = trimmed.charAt(0);
-    const firstWord = trimmed.split(" ")[0].toLowerCase();
+    if (!trimmed) {
+      if (foundQuickAnswer) cleanedLines.push("");
+      continue;
+    }
+
+    if (isInternalLine(trimmed)) continue;
 
     if (
-      trimmed.startsWith("*") ||
-      trimmed.startsWith("(") ||
-      firstWord === "user" ||
-      firstWord === "role:" ||
-      firstWord === "goal:" ||
-      firstWord === "constraints:" ||
-      firstWord === "check:" ||
-      firstWord === "drafting" ||
-      firstWord === "refining" ||
-      firstWord === "final" ||
-      firstWord === "wait," ||
-      trimmed.toLowerCase().includes("self-correction") ||
-      trimmed.toLowerCase().includes("internal") ||
-      (trimmed.includes(":") && firstWord !== "🌾" && firstWord !== "📋" && firstWord !== "💡" && firstWord !== "⚠️" && firstWord !== "📅" && !trimmed.startsWith("N:") && !trimmed.startsWith("P:") && !trimmed.startsWith("K:"))
+      trimmed.startsWith("🌾 QUICK ANSWER:") ||
+      trimmed.startsWith("📋 DETAILS:") ||
+      trimmed.startsWith("💡 TIPS:") ||
+      trimmed.startsWith("⚠️ IMPORTANT:") ||
+      trimmed.startsWith("📅 NEXT STEPS:")
     ) {
-      if (trimmed.startsWith("🌾 QUICK ANSWER:") || trimmed.startsWith("📋 DETAILS:") || trimmed.startsWith("💡 TIPS:") || trimmed.startsWith("⚠️ IMPORTANT:") || trimmed.startsWith("📅 NEXT STEPS:")) {
-        captureMode = true;
-        foundQuickAnswer = true;
-        cleanedLines.push(trimmed);
-      }
+      foundQuickAnswer = true;
+      cleanedLines.push(trimmed);
       continue;
     }
 
     if (foundQuickAnswer) {
-      if (trimmed === "") {
-        continue;
-      }
       cleanedLines.push(trimmed);
-    } else if (trimmed.startsWith("🌾") || trimmed.startsWith("📋") || trimmed.startsWith("💡") || trimmed.startsWith("⚠️") || trimmed.startsWith("📅")) {
+    } else if (
+      trimmed.startsWith("🌾") || trimmed.startsWith("📋") ||
+      trimmed.startsWith("💡") || trimmed.startsWith("⚠️") || trimmed.startsWith("📅")
+    ) {
       foundQuickAnswer = true;
       cleanedLines.push(trimmed);
     }

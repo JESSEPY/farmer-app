@@ -7,6 +7,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAIAssistant } from "@/hooks/use-ai-assistant";
 import { AnimatedAIChat, TypingIndicator } from "@/components/ui/animated-ai-chat";
+import { AiMessageRenderer } from "@/components/chat/ai-message-renderer";
 
 const FARMING_COMMANDS = [
   { 
@@ -122,7 +123,7 @@ export default function ChatPage() {
                       message.role === "assistant" ? "bg-muted/50" : "bg-primary text-primary-foreground"
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-line">{message.content}</p>
+                    <AiMessageRenderer content={message.content} />
                   </div>
                 </div>
               ))}

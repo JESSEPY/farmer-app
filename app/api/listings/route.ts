@@ -8,12 +8,26 @@ export async function GET(request: NextRequest) {
     const crop = searchParams.get("crop");
     const municipality = searchParams.get("municipality");
     const search = searchParams.get("search");
+    const sort = searchParams.get("sort") || "newest";
 
     let query = supabase
       .from("listings")
       .select("*, farmer:farmer_id(full_name, email, phone)")
-      .eq("status", "active")
-      .order("created_at", { ascending: false });
+      .eq("status", "active");
+
+    switch (sort) {
+      case "price_asc":
+        query = query.order("price", { ascending: true });
+        break;
+      case "price_desc":
+        query = query.order("price", { ascending: false });
+        break;
+      case "quantity_desc":
+        query = query.order("quantity", { ascending: false });
+        break;
+      default:
+        query = query.order("created_at", { ascending: false });
+    }
 
     if (crop) {
       query = query.eq("crop", crop);

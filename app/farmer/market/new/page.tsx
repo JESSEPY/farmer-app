@@ -12,19 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { PageContainer } from "@/components/layout/page-container";
 import { PhotoUpload } from "@/components/market/photo-upload";
+import { cropTypes, municipalities } from "@/lib/constants/market";
 import { toast } from "sonner";
-
-const cropTypes = [
-  "Rice (Palay)", "Corn", "Coconut", "Cassava", "Sweet Potato",
-  "Peanut", "Mongo", "Tomato", "Eggplant", "Pepper", "Okra", "Squash",
-  "Banana", "Papaya", "Watermelon", "Livestock (Chicken)", "Livestock (Pig)",
-];
-
-const municipalities = [
-  "Mobo", "Milagros", "Aroroy", "Baleno", "Balud", "Cawayan",
-  "Claveria", "Dapa", "Esperanza", "Mandaon", "Pilar",
-  "San Fernando", "San Jose", "Uson",
-];
 
 export default function NewListingPage() {
   const router = useRouter();
@@ -84,6 +73,7 @@ export default function NewListingPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/farmer/market"
+            aria-label="Back to market"
             className="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />

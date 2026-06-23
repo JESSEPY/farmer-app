@@ -1,7 +1,7 @@
 // app/api/chat/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
-import { generateResponse } from "@/lib/gemini-service";
+import { generateResponse } from "@/lib/ai-service";
 
 export async function POST(request: NextRequest) {
   try {

@@ -44,8 +44,12 @@ export function Navigation({ role = "farmer" }: { role?: "farmer" | "buyer" }) {
         
         <nav className="flex-1 p-3 space-y-1">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || 
-              (item.href !== "/" && pathname.startsWith(item.href));
+            const otherItems = navItems.filter((i) => i.href !== item.href);
+            const hasMoreSpecificMatch = otherItems.some((i) =>
+              i.href.startsWith(item.href + "/") && pathname.startsWith(i.href)
+            );
+            const isActive = pathname === item.href ||
+              (pathname.startsWith(item.href + "/") && !hasMoreSpecificMatch);
             return (
               <Link
                 key={item.href}

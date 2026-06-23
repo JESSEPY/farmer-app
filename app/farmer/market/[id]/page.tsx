@@ -19,6 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/layout/page-container";
 import { ImageGallery } from "@/components/market/image-gallery";
+import { cropTypes, municipalities } from "@/lib/constants/market";
 import { cn } from "@/lib/utils";
 
 interface ListingDetailProps {
@@ -30,18 +31,6 @@ const gradeColors: Record<string, string> = {
   B: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   C: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };
-
-const cropTypes = [
-  "Rice (Palay)", "Corn", "Coconut", "Cassava", "Sweet Potato",
-  "Peanut", "Mongo", "Tomato", "Eggplant", "Pepper", "Okra", "Squash",
-  "Banana", "Papaya", "Watermelon", "Livestock (Chicken)", "Livestock (Pig)",
-];
-
-const municipalities = [
-  "Mobo", "Milagros", "Aroroy", "Baleno", "Balud", "Cawayan",
-  "Claveria", "Dapa", "Esperanza", "Mandaon", "Pilar",
-  "San Fernando", "San Jose", "Uson",
-];
 
 export default function ListingDetailPage({ params }: ListingDetailProps) {
   const router = useRouter();
@@ -166,8 +155,30 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   if (loading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <p className="text-muted-foreground">Loading listing...</p>
+        <div className="space-y-6 max-w-3xl mx-auto animate-pulse">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-md bg-muted" />
+            <div className="flex-1 space-y-2">
+              <div className="h-7 bg-muted rounded w-48" />
+              <div className="h-4 bg-muted rounded w-32" />
+            </div>
+            <div className="h-5 bg-muted rounded w-16" />
+            <div className="flex gap-2">
+              <div className="h-9 bg-muted rounded w-20" />
+              <div className="h-9 bg-muted rounded w-20" />
+            </div>
+          </div>
+          <div className="h-48 sm:h-64 rounded-lg bg-muted" />
+          <div className="h-28 rounded-xl bg-muted" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="h-28 rounded-xl bg-muted" />
+            <div className="h-28 rounded-xl bg-muted" />
+          </div>
+          <div className="h-36 rounded-xl bg-muted" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="h-10 rounded-md bg-muted" />
+            <div className="h-10 rounded-md bg-muted" />
+          </div>
         </div>
       </PageContainer>
     );
@@ -177,8 +188,11 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
     return (
       <PageContainer>
         <div className="text-center py-12">
-          <p className="text-muted-foreground">Listing not found</p>
-          <Link href="/farmer/market" className="text-primary hover:underline text-sm">Back to market</Link>
+          <div className="max-w-sm mx-auto space-y-3">
+            <p className="text-muted-foreground">This listing could not be found</p>
+            <p className="text-xs text-muted-foreground">It may have been archived or removed by the seller.</p>
+            <Link href="/farmer/market" className="text-primary hover:underline text-sm inline-block">Back to market</Link>
+          </div>
         </div>
       </PageContainer>
     );
@@ -190,6 +204,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
         <div className="flex items-center gap-4">
           <Link
             href="/farmer/market"
+            aria-label="Back to market"
             className="inline-flex items-center justify-center rounded-md w-10 h-10 hover:bg-muted cursor-pointer"
           >
             <ArrowLeft className="w-5 h-5" />

@@ -38,12 +38,14 @@ const FloatingNav = ({ role = "farmer" }: { role?: "farmer" | "buyer" }) => {
     btnRefs.current[index] = el;
   };
 
-  const activeIndex = navItems.findIndex(
-    (item) =>
-      pathname === item.href ||
-      (item.href === "/farmer/dashboard" && pathname === "/farmer/dashboard") ||
-      (item.href !== "/farmer/dashboard" && pathname.startsWith(item.href))
-  );
+  const activeIndex = navItems.findIndex((item) => {
+    const otherItems = navItems.filter((i) => i.href !== item.href);
+    const hasMoreSpecificMatch = otherItems.some((i) =>
+      i.href.startsWith(item.href + "/") && pathname.startsWith(i.href)
+    );
+    return pathname === item.href ||
+      (pathname.startsWith(item.href + "/") && !hasMoreSpecificMatch);
+  });
 
   useEffect(() => {
     const updateIndicator = () => {
@@ -73,10 +75,13 @@ const FloatingNav = ({ role = "farmer" }: { role?: "farmer" | "buyer" }) => {
         className="relative flex items-center justify-between bg-background/90 backdrop-blur-xl shadow-lg rounded-full px-2 py-2 border border-border"
       >
         {navItems.map((item, index) => {
+          const otherItems = navItems.filter((i) => i.href !== item.href);
+          const hasMoreSpecificMatch = otherItems.some((i) =>
+            i.href.startsWith(item.href + "/") && pathname.startsWith(i.href)
+          );
           const isActive =
             pathname === item.href ||
-            (item.href === "/farmer/dashboard" && pathname === "/farmer/dashboard") ||
-            (item.href !== "/farmer/dashboard" && pathname.startsWith(item.href));
+            (pathname.startsWith(item.href + "/") && !hasMoreSpecificMatch);
 
           return (
             <Link
