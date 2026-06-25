@@ -57,3 +57,7 @@ CREATE POLICY "listing_photos_insert" ON storage.objects
 
 CREATE POLICY "listing_photos_delete" ON storage.objects
   FOR DELETE USING (bucket_id = 'listing-photos' AND auth.uid() = owner);
+
+-- Allow authenticated users to read any profile (needed for buyer↔farmer visibility)
+CREATE POLICY "profiles_select_all" ON profiles
+  FOR SELECT USING (auth.role() = 'authenticated');

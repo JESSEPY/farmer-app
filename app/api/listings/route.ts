@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const municipality = searchParams.get("municipality");
     const search = searchParams.get("search");
     const sort = searchParams.get("sort") || "newest";
+    const limit = searchParams.get("limit");
 
     let query = supabase
       .from("listings")
@@ -39,6 +40,10 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       query = query.ilike("crop", `%${search}%`);
+    }
+
+    if (limit) {
+      query = query.limit(parseInt(limit, 10));
     }
 
     const { data: listings, error } = await query;

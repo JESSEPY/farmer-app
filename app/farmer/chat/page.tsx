@@ -37,7 +37,7 @@ const FARMING_COMMANDS = [
 ];
 
 export default function ChatPage() {
-  const { messages, isLoading, sendMessage, quickQuestions } = useAIAssistant();
+  const { messages, isLoading, sendMessage, cancel, quickQuestions } = useAIAssistant();
   const [input, setInput] = useState("");
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [activeSuggestion, setActiveSuggestion] = useState(-1);
@@ -72,11 +72,11 @@ export default function ChatPage() {
     setInput("");
   }, [input, isLoading, sendMessage, messages]);
 
-  const handleQuickQuestion = (question: string) => {
+  const handleQuickQuestion = useCallback((question: string) => {
     if (!isLoading) {
-      setInput(question);
+      sendMessage(question, messages);
     }
-  };
+  }, [isLoading, sendMessage, messages]);
 
   const handleSelectSuggestion = (index: number) => {
     const selected = FARMING_COMMANDS[index];
@@ -137,6 +137,20 @@ export default function ChatPage() {
                 </div>
               )}
 
+              {quickQuestions.length > 0 && messages.length <= 1 && !isLoading && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {quickQuestions.map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => handleQuickQuestion(q)}
+                      className="text-sm px-3 py-1.5 rounded-full bg-muted text-muted-foreground hover:bg-primary/10 hover:text-foreground transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              )}
+
               <div ref={scrollRef} />
             </div>
           </ScrollArea>
@@ -147,6 +161,7 @@ export default function ChatPage() {
               value={input}
               onChange={handleInputChange}
               onSubmit={handleSend}
+              onCancel={cancel}
               isLoading={isLoading}
               showCommandPalette={showCommandPalette}
               onToggleCommandPalette={() => setShowCommandPalette(!showCommandPalette)}

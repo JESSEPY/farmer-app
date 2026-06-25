@@ -1,6 +1,6 @@
 // hooks/use-ai-assistant.ts
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { QUICK_QUESTIONS } from "@/lib/prompts/assistant-config";
 
 export interface ChatMessage {
@@ -15,6 +15,7 @@ interface UseAIAssistantResult {
   isLoading: boolean;
   error: string | null;
   sendMessage: (content: string, currentMessages: ChatMessage[]) => Promise<void>;
+  cancel: () => void;
   quickQuestions: string[];
 }
 
@@ -32,6 +33,15 @@ export function useAIAssistant(): UseAIAssistantResult {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const cancel = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    setIsLoading(false);
+  }, []);
 
   const sendMessage = useCallback(async (content: string, currentMessages: ChatMessage[]) => {
     if (!content.trim()) return;
@@ -47,6 +57,9 @@ export function useAIAssistant(): UseAIAssistantResult {
     setIsLoading(true);
     setError(null);
 
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       const conversation = currentMessages
         .concat(userMessage)
@@ -59,6 +72,7 @@ export function useAIAssistant(): UseAIAssistantResult {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: conversation }),
+        signal: controller.signal,
       });
 
       const data = await response.json();
@@ -76,6 +90,9 @@ export function useAIAssistant(): UseAIAssistantResult {
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        return;
+      }
       const errorMsg = err instanceof Error ? err.message : "Failed to send message";
       setError(errorMsg);
 
@@ -89,6 +106,7 @@ export function useAIAssistant(): UseAIAssistantResult {
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      abortRef.current = null;
     }
   }, []);
 
@@ -97,6 +115,7 @@ export function useAIAssistant(): UseAIAssistantResult {
     isLoading,
     error,
     sendMessage,
+    cancel,
     quickQuestions: QUICK_QUESTIONS,
   };
 }

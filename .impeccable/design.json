@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-23T11:10:00.000Z",
+  "title": "Design System: Masbate Farmer App",
+  "extensions": {
+    "colorMeta": {
+      "forest-green": { "role": "primary", "displayName": "Forest Green", "canonical": "#2e7d32", "tonalRamp": ["#0a1f0c", "#1b5e20", "#2e7d32", "#388e3c", "#43a047", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9"] },
+      "canopy-green": { "role": "primary", "displayName": "Canopy Green", "canonical": "#4caf50", "tonalRamp": ["#0a1f0c", "#1b5e20", "#2e7d32", "#388e3c", "#43a047", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9"] },
+      "dark-forest": { "role": "secondary", "displayName": "Dark Forest", "canonical": "#1b5e20", "tonalRamp": ["#0a1f0c", "#1b5e20", "#2e7d32", "#388e3c", "#43a047", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9"] },
+      "spring-leaf": { "role": "secondary", "displayName": "Spring Leaf", "canonical": "#e8f5e9", "tonalRamp": ["#1b5e20", "#2e7d32", "#388e3c", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9", "#e8f5e9", "#f1f8e9"] },
+      "sage": { "role": "accent", "displayName": "Sage", "canonical": "#c8e6c9", "tonalRamp": ["#1b5e20", "#2e7d32", "#388e3c", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9", "#e8f5e9", "#f1f8e9"] },
+      "warm-earth": { "role": "neutral", "displayName": "Warm Earth", "canonical": "#f8f5f0", "tonalRamp": ["#3e2723", "#4e342e", "#5d4037", "#6d4c41", "#8d6e63", "#a1887f", "#d7ccc8", "#efebe9", "#f8f5f0", "#fdfcf8"] },
+      "dark-loam": { "role": "neutral", "displayName": "Dark Loam", "canonical": "#3e2723", "tonalRamp": ["#1a0e0c", "#2a1a16", "#3e2723", "#4e342e", "#5d4037", "#6d4c41", "#8d6e63", "#a1887f", "#d7ccc8", "#efebe9"] },
+      "wheat": { "role": "neutral", "displayName": "Wheat", "canonical": "#f0e9e0", "tonalRamp": ["#3e2723", "#5d4037", "#6d4c41", "#8d6e63", "#a1887f", "#bcaaa4", "#d7ccc8", "#e8ddd2", "#f0e9e0", "#f8f3ec"] },
+      "clay": { "role": "neutral", "displayName": "Clay", "canonical": "#6d4c41", "tonalRamp": ["#1a0e0c", "#3e2723", "#4e342e", "#5d4037", "#6d4c41", "#8d6e63", "#a1887f", "#bcaaa4", "#d7ccc8", "#efebe9"] },
+      "bark": { "role": "neutral", "displayName": "Bark", "canonical": "#e0d6c9", "tonalRamp": ["#3e2723", "#5d4037", "#6d4c41", "#8d6e63", "#a1887f", "#bcaaa4", "#d7ccc8", "#e0d6c9", "#ece3d8", "#f5efe6"] },
+      "destructive": { "role": "semantic", "displayName": "Destructive Red", "canonical": "#c62828", "tonalRamp": ["#4a0000", "#7f0000", "#b71c1c", "#c62828", "#d32f2f", "#e53935", "#ef5350", "#e57373", "#ef9a9a", "#ffcdd2"] },
+      "forest-dark": { "role": "neutral", "displayName": "Forest Dark", "canonical": "#1c2a1f", "tonalRamp": ["#0a120b", "#1c2a1f", "#2d3a2e", "#3e4a3d", "#4e5e4c", "#5e725b", "#6e8a6a", "#7ea279", "#aecba9", "#d7e0d6"] },
+      "warm-light": { "role": "neutral", "displayName": "Warm Light", "canonical": "#f0ebe5", "tonalRamp": ["#1c2a1f", "#3e4a3d", "#5e725b", "#7ea279", "#aecba9", "#c4cfbe", "#d7dccf", "#e3e4d8", "#f0ebe5", "#f8f4ef"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Page headings and section titles. Tight tracking for confident headline cadence." },
+      "body": { "displayName": "Body", "purpose": "Default paragraph text, button labels, navigation. 17px base for editorial reading pace." },
+      "display-serif": { "displayName": "Display Serif", "purpose": "Featured content headlines and long-form article titles using Merriweather." },
+      "body-serif": { "displayName": "Body Serif", "purpose": "Long-form agricultural content — crop guides, articles, educational copy." },
+      "label": { "displayName": "Label", "purpose": "Captions, metadata, card descriptions, secondary text." }
+    },
+    "shadows": [
+      { "name": "card-ring", "value": "0 0 0 1px rgba(62, 39, 35, 0.1)", "purpose": "Subtle boundary ring on cards. Used instead of box-shadow. Light mode only." },
+      { "name": "card-ring-dark", "value": "0 0 0 1px rgba(240, 235, 229, 0.1)", "purpose": "Card ring for dark mode." },
+      { "name": "focus-ring", "value": "0 0 0 2px rgba(46, 125, 50, 0.5)", "purpose": "Focus-visible ring on interactive elements." }
+    ],
+    "motion": [
+      { "name": "press", "value": "transform 0.15s cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Button press state transition. Applied via active:scale-[0.98]." },
+      { "name": "spring-indicator", "value": "spring(400, 30)", "purpose": "Floating nav active indicator spring animation via framer-motion." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing for state transitions (color, opacity, transform)." },
+      { "name": "fade-in", "value": "fade-in 0.6s ease-out", "purpose": "Fade-in scroll reveal: opacity 0→1, translateY 20px→0." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The primary action button. Forest Green filled with white text. Used for main CTAs (Sign In, Save, Submit).",
+      "html": "<button class=\"ds-btn-primary\">Save</button>",
+      "css": ".ds-btn-primary { background: #2e7d32; color: #fff; font-family: Montserrat, system-ui, sans-serif; font-size: 17px; font-weight: 400; line-height: 1.47; padding: 10px 20px; border-radius: 11.2px; border: 1px solid transparent; cursor: pointer; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; min-height: 44px; } .ds-btn-primary:hover { background: #256d28; } .ds-btn-primary:active { transform: scale(0.98); } .ds-btn-primary:focus-visible { outline: 2px solid rgba(46, 125, 50, 0.5); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action. Pale Spring Leaf background with Dark Forest text. Used for Cancel, Learn More.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #e8f5e9; color: #1b5e20; font-family: Montserrat, system-ui, sans-serif; font-size: 17px; font-weight: 400; padding: 10px 20px; border-radius: 11.2px; border: 1px solid transparent; cursor: pointer; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; min-height: 44px; } .ds-btn-secondary:hover { background: #d7e8d8; } .ds-btn-secondary:active { transform: scale(0.98); } .ds-btn-secondary:focus-visible { outline: 2px solid rgba(46, 125, 50, 0.5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Subtle outline button. Transparent with Bark border. Hover fills with Wheat.",
+      "html": "<button class=\"ds-btn-outline\">Learn More</button>",
+      "css": ".ds-btn-outline { background: transparent; color: #3e2723; font-family: Montserrat, system-ui, sans-serif; font-size: 17px; font-weight: 400; padding: 10px 20px; border-radius: 11.2px; border: 1px solid #e0d6c9; cursor: pointer; transition: background 0.15s cubic-bezier(0.4, 0, 0.2, 1); display: inline-flex; align-items: center; justify-content: center; min-height: 44px; } .ds-btn-outline:hover { background: #f0e9e0; color: #3e2723; } .ds-btn-outline:focus-visible { outline: 2px solid rgba(46, 125, 50, 0.5); outline-offset: 2px; }"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Default content container. Uses ring-1 boundary instead of shadow. Warm Earth background with Dark Loam text.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\"><div class=\"ds-card-title\">Crop Summary</div><div class=\"ds-card-description\">Your rice paddies this season</div></div><div class=\"ds-card-content\"><p style=\"margin:0\">2 active crops · 1.5 hectares</p></div></div>",
+      "css": ".ds-card { background: #f8f5f0; color: #3e2723; border-radius: 11.2px; padding: 16px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 0 0 1px rgba(62, 39, 35, 0.1); font-family: Montserrat, system-ui, sans-serif; } .ds-card-header { display: grid; grid-template-rows: auto auto; gap: 4px; } .ds-card-title { font-family: Montserrat, system-ui, sans-serif; font-size: 16px; font-weight: 500; line-height: 1.3; } .ds-card-description { font-size: 14px; color: #6d4c41; } .ds-card-content { font-size: 14px; } .ds-card-footer { border-top: 1px solid #e0d6c9; background: rgba(240, 233, 224, 0.5); padding: 16px; margin: 0 -16px -16px -16px; border-radius: 0 0 11.2px 11.2px; }"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text input field. Rounded-lg (8px) with Bark border. Forest Green focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search crops...\" />",
+      "css": ".ds-input { background: transparent; color: #3e2723; font-family: Montserrat, system-ui, sans-serif; font-size: 17px; height: 32px; padding: 4px 10px; border-radius: 8px; border: 1px solid #e0d6c9; outline: none; width: 100%; min-width: 0; transition: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box; } .ds-input::placeholder { color: #6d4c41; opacity: 0.6; } .ds-input:focus { border-color: #2e7d32; box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.5); } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Default Badge",
+      "kind": "chip",
+      "refersTo": "badge-default",
+      "description": "Forest Green filled badge. Used for status indicators, category labels.",
+      "html": "<span class=\"ds-badge\">Active</span>",
+      "css": ".ds-badge { background: #2e7d32; color: #ffffff; font-family: Montserrat, system-ui, sans-serif; font-size: 14px; font-weight: 400; line-height: 1.43; padding: 2px 10px; border-radius: 11.2px; display: inline-flex; align-items: center; white-space: nowrap; }"
+    },
+    {
+      "name": "Sidebar Nav",
+      "kind": "nav",
+      "refersTo": "nav-sidebar",
+      "description": "Desktop sidebar navigation. 240px wide, Warm Earth background, active item gets Forest Green fill.",
+      "html": "<nav class=\"ds-sidebar\"><div class=\"ds-sidebar-header\"><div class=\"ds-sidebar-logo\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 22V8\"/><path d=\"M12 8c-2 0-4-2-4-5 0-1 2-3 4-3s4 2 4 3c0 3-2 5-4 5z\"/></svg> Farmer App</div><div class=\"ds-sidebar-subtitle\">Masbate Marketplace</div></div><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg> Dashboard</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 22V8\"/><path d=\"M12 8c-2 0-4-2-4-5 0-1 2-3 4-3s4 2 4 3c0 3-2 5-4 5z\"/></svg> Crops</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M8 12h8\"/><path d=\"M12 8v8\"/></svg> Market</a></nav>",
+      "css": ".ds-sidebar { background: #f8f5f0; border-right: 1px solid #e0d6c9; width: 240px; height: 100vh; display: flex; flex-direction: column; font-family: Montserrat, system-ui, sans-serif; } .ds-sidebar-header { padding: 20px; border-bottom: 1px solid #e0d6c9; } .ds-sidebar-logo { font-size: 17px; font-weight: 600; color: #3e2723; display: flex; align-items: center; gap: 8px; } .ds-sidebar-logo svg { width: 28px; height: 28px; background: #2e7d32; border-radius: 50%; padding: 6px; } .ds-sidebar-subtitle { font-size: 12px; color: #6d4c41; margin-top: 4px; } .ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 12px; border-radius: 8px; font-size: 15px; color: #6d4c41; text-decoration: none; transition: background 0.15s, color 0.15s; } .ds-nav-item:hover { background: #f0e9e0; color: #3e2723; } .ds-nav-item-active { background: #2e7d32; color: #ffffff; font-weight: 500; } .ds-nav-item-active:hover { background: #256d28; color: #ffffff; }"
+    },
+    {
+      "name": "Dialog",
+      "kind": "custom",
+      "refersTo": "dialog",
+      "description": "Modal dialog with backdrop blur overlay and fade+zoom entrance animation.",
+      "html": "<div class=\"ds-dialog-overlay\" style=\"position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px)\"><div class=\"ds-dialog-content\"><h2 class=\"ds-dialog-title\">Confirm Delete</h2><p class=\"ds-dialog-desc\">Are you sure you want to remove this listing?</p><div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:24px\"><button class=\"ds-btn-secondary\">Cancel</button><button class=\"ds-btn-primary\" style=\"background:#c62828\">Delete</button></div></div></div>",
+      "css": ".ds-dialog-content { background: #f8f5f0; color: #3e2723; border-radius: 11.2px; padding: 24px; max-width: 440px; width: 100%; box-shadow: 0 0 0 1px rgba(62, 39, 35, 0.1); animation: ds-fade-zoom 0.2s ease-out; font-family: Montserrat, system-ui, sans-serif; } .ds-dialog-title { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin: 0 0 8px 0; } .ds-dialog-desc { font-size: 17px; line-height: 1.47; color: #6d4c41; margin: 0; } @keyframes ds-fade-zoom { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Terraced Farm",
+    "overview": "Every interface element has a designated place, like crops arranged in terraced rows. Hierarchy is conveyed through elevation (tonal layering, not shadows), spacing (generous air between sections like open fields), and a restrained green-accent-on-warm-earth palette that signals freshness without screaming.\n\nThe system is Fresh & Vital — lively and green-forward, but grounded in warm earth tones that keep it from feeling sterile or generic. Montserrat provides clean, approachable headlines; Merriweather steps in for long-form agricultural content where readability matters. The primary accent is Forest Green (#2e7d32), used deliberately on interactive elements and active states — never gratuitously.\n\nThis is an app-first interface. Density is higher than a marketing site but never cramped. Every card stacks vertically with consistent internal rhythm; every button responds with a subtle press (scale 0.98); every navigation item lights up green when active. Motion is restrained: state changes, scroll reveals, and the iOS-style floating nav's spring-loaded indicator. No decorative chrome, no shadows on chrome.",
+    "keyCharacteristics": [
+      "Warm earth background (#f8f5f0) with Forest Green (#2e7d32) as the single accent — rarely applied beyond 15% of any surface",
+      "Flat-by-default elevation: depth conveyed through surface color changes and thin ring-1 borders, never drop shadows",
+      "Consistent rounded-xl (11.2px) on all interactive elements — buttons, cards, inputs, badges share the same corner grammar",
+      "Dual font strategy: Montserrat (sans) for UI and headings, Merriweather (serif) for long-form agricultural reading",
+      "Dual navigation: 240px desktop sidebar that collapses to an iOS-style floating bottom tab bar on mobile",
+      "Dark mode re-color: warm earth to forest dark, green accent to brighter canopy green against warm-light text"
+    ],
+    "rules": [
+      { "name": "The Terraced Accent Rule", "body": "Forest Green is applied on <=15% of any given surface. Its rarity is its power. Active nav items, primary buttons, focus rings — that is the full set. Never decorative green.", "section": "colors" },
+      { "name": "The Warmth Rule", "body": "Neutrals are tinted toward brown, never true gray. Bark (#e0d6c9), Clay (#6d4c41), Wheat (#f0e9e0) all carry warmth. The only place pure gray appears is on disabled elements.", "section": "colors" },
+      { "name": "The 17px Rule", "body": "Body text is always 17px, never 16px. This is the single most important typographic decision — it sets the reading pace and distinguishes the interface from generic app cadences.", "section": "typography" },
+      { "name": "The Weight 600 Rule", "body": "Headings and strong inline emphasis use weight 600, never 700. Weight 500 is deliberately absent from the system. The ladder is 300 / 400 / 600 / 700.", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "No CSS box-shadow appears on any UI element. Cards, buttons, modals, navigation — all flat. The sole shadow-like effect is the ring-1 border on cards, which is a thin colored outline, not a lift.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Forest Green (#2e7d32) for every interactive accent — primary buttons, active nav items, focus rings, links. The single accent is non-negotiable.",
+      "Do run body text at 17px / line-height 1.47 — the 17px rhythm defines the interface reading pace.",
+      "Do use rounded-xl (11.2px) on all interactive elements — buttons, cards, badges. The consistent corner grammar is the system's signature.",
+      "Do apply active:scale-[0.98] as the press state on every tappable control — it is the system's tactile feedback language.",
+      "Do rely on surface color changes and ring-1 ring-foreground/10 for card boundaries, not drop shadows.",
+      "Do use Merriweather for long-form agricultural content (crop guides, articles, educational copy) and Montserrat for all UI chrome.",
+      "Do provide dark mode as a first-class experience — every surface, text, and accent token has a dark counterpart.",
+      "Do maintain 44x44px minimum touch targets on all interactive controls."
+    ],
+    "donts": [
+      "Don't introduce a second accent color. Forest Green is the single interactive signal.",
+      "Don't use CSS box-shadow on UI elements. Cards, buttons, modals, navigation — all flat. The ring border is the only boundary.",
+      "Don't use decorative gradients, glassmorphism, or gradient text. Atmosphere comes from surface color and photography.",
+      "Don't set body text below 17px. 17px is the floor; 14px labels are the only exception.",
+      "Don't use weight 500 — the system ladder is 300 / 400 / 600 / 700. Headlines are 600, body is 400.",
+      "Don't apply hairline borders (border-left / border-right > 1px) as decorative accents on cards or list items.",
+      "Don't mix border-radius grammars — buttons, cards, badges, and inputs all use rounded-xl (11.2px) or rounded-lg (8px). No intermediate values.",
+      "Don't use generic green gradients or 'nature' stock photography tropes. The green is specific (#2e7d32), the warmth is in the earth tones, not in decorative overlays.",
+      "Don't use numbered section markers (01 / 02 / 03) as default section scaffolding — the app's structure is organizational, not a sequence to count through."
+    ]
+  }
+}

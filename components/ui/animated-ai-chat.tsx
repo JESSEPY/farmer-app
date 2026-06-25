@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import {
   SendIcon,
   XIcon,
-  LoaderIcon,
+  SquareIcon,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import * as React from "react"
@@ -73,25 +73,24 @@ interface AnimatedAIChatProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  onCancel?: () => void;
   isLoading: boolean;
   attachments?: string[];
-  onAttach?: () => void;
   onRemoveAttachment?: (index: number) => void;
   showCommandPalette?: boolean;
   onToggleCommandPalette?: () => void;
   commandSuggestions?: CommandSuggestion[];
   activeSuggestion?: number;
   onSelectSuggestion?: (index: number) => void;
-  inputFocused?: boolean;
 }
 
 export function AnimatedAIChat({
   value,
   onChange,
   onSubmit,
+  onCancel,
   isLoading,
   attachments = [],
-  onAttach,
   onRemoveAttachment,
   showCommandPalette = false,
   onToggleCommandPalette,
@@ -136,37 +135,37 @@ export function AnimatedAIChat({
   };
 
   return (
-    <div className="relative backdrop-blur-2xl bg-white/[0.02] rounded-2xl border border-white/[0.05] shadow-2xl">
+    <div className="relative bg-card ring-1 ring-foreground/10 rounded-xl">
       <AnimatePresence>
         {showCommandPalette && (
           <motion.div 
             ref={commandPaletteRef}
-            className="absolute left-4 right-4 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
+            className="absolute left-4 right-4 bottom-full mb-2 bg-popover ring-1 ring-foreground/10 rounded-lg z-50 overflow-hidden"
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
             transition={{ duration: 0.15 }}
           >
-            <div className="py-1 bg-black/95">
+            <div className="py-1">
               {commandSuggestions.map((suggestion, index) => (
                 <motion.div
                   key={suggestion.prefix}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 text-xs transition-colors cursor-pointer",
                     activeSuggestion === index 
-                      ? "bg-primary/20 text-primary-foreground" 
-                      : "text-white/70 hover:bg-white/5"
+                      ? "bg-primary/10 text-foreground" 
+                      : "text-muted-foreground hover:bg-muted"
                   )}
                   onClick={() => onSelectSuggestion?.(index)}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.03 }}
                 >
-                  <div className="w-5 h-5 flex items-center justify-center text-white/60">
+                  <div className="w-5 h-5 flex items-center justify-center text-muted-foreground/60">
                     {suggestion.icon}
                   </div>
                   <div className="font-medium">{suggestion.label}</div>
-                  <div className="text-white/40 text-xs ml-1">
+                  <div className="text-muted-foreground/40 text-xs ml-1">
                     {suggestion.prefix}
                   </div>
                 </motion.div>
@@ -230,28 +229,37 @@ export function AnimatedAIChat({
         )}
       </AnimatePresence>
 
-      <div className="p-4 border-t border-border/50 flex items-center justify-end gap-4">
-        <motion.button
-          type="button"
-          onClick={onSubmit}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.98 }}
-          disabled={isLoading || !value.trim()}
-          className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-all",
-            "flex items-center gap-2",
-            value.trim()
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          )}
-        >
-          {isLoading ? (
-            <LoaderIcon className="w-4 h-4 animate-spin" />
-          ) : (
+      <div className="p-4 border-t border-border flex items-center justify-end gap-4">
+        {isLoading ? (
+          <motion.button
+            type="button"
+            onClick={onCancel}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            className="px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 bg-destructive/10 text-destructive hover:bg-destructive/20"
+          >
+            <SquareIcon className="w-4 h-4 fill-current" />
+            <span>Stop</span>
+          </motion.button>
+        ) : (
+          <motion.button
+            type="button"
+            onClick={onSubmit}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.98 }}
+            disabled={!value.trim()}
+            className={cn(
+              "px-4 py-2 rounded-xl text-sm font-medium transition-all",
+              "flex items-center gap-2",
+              value.trim()
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground"
+            )}
+          >
             <SendIcon className="w-4 h-4" />
-          )}
-          <span>Send</span>
-        </motion.button>
+            <span>Send</span>
+          </motion.button>
+        )}
       </div>
     </div>
   );

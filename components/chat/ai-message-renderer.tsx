@@ -104,7 +104,7 @@ function MarkdownText({ text }: { text: string }) {
 
 function QuickAnswerSection({ content }: { content: string }) {
   return (
-    <div className="border-l-2 border-primary bg-primary/5 rounded-r-lg px-4 py-3 -ml-3 mb-4">
+    <div className="bg-primary/5 rounded-lg px-4 py-3 mb-4">
       <p className="text-[15px] font-medium leading-relaxed text-foreground">
         {renderInlineText(content)}
       </p>
@@ -116,9 +116,6 @@ function DetailsSection({ content }: { content: string }) {
   if (!content) return null;
   return (
     <div className="mb-4">
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
-        Details
-      </p>
       <div className="text-sm leading-relaxed text-foreground">
         <MarkdownText text={content} />
       </div>
@@ -129,7 +126,7 @@ function DetailsSection({ content }: { content: string }) {
 function TipsSection({ content }: { content: string }) {
   if (!content) return null;
   return (
-    <div className="border-l-2 border-green-500 bg-green-50/50 dark:bg-green-950/20 rounded-r-lg px-4 py-3 -ml-3 mb-4">
+    <div className="bg-green-50/50 dark:bg-green-950/20 rounded-lg px-4 py-3 mb-4">
       <div className="flex items-start gap-2">
         <Lightbulb className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
         <p className="text-sm leading-relaxed text-foreground">
@@ -143,7 +140,7 @@ function TipsSection({ content }: { content: string }) {
 function ImportantSection({ content }: { content: string }) {
   if (!content) return null;
   return (
-    <div className="border-l-2 border-amber-500 bg-amber-50/50 dark:bg-amber-950/20 rounded-r-lg px-4 py-3 -ml-3 mb-4">
+    <div className="bg-amber-50/50 dark:bg-amber-950/20 rounded-lg px-4 py-3 mb-4">
       <div className="flex items-start gap-2">
         <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
         <p className="text-sm leading-relaxed text-foreground">
@@ -161,9 +158,9 @@ function NextStepsSection({ content, steps }: { content: string; steps?: string[
     <div className="mb-2">
       <div className="flex items-center gap-2 mb-2">
         <ListChecks className="w-4 h-4 text-primary" />
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+        <span className="text-sm font-medium text-foreground">
           Next Steps
-        </p>
+        </span>
       </div>
       {content && (
         <p className="text-sm leading-relaxed text-foreground mb-2">
