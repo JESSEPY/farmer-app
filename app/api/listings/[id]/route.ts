@@ -62,7 +62,7 @@ export async function PUT(
     }
 
     const formData = await request.formData();
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
 
     const textFields = ["crop", "quantity", "grade", "municipality", "description", "harvest_date", "status"];
     for (const field of textFields) {

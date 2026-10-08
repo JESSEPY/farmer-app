@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signIn, signUp, signOut } from "@/lib/services/auth-service";
 import { UserRole } from "@/lib/types/auth";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { fullName, phone } = body;
 
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
     if (fullName) updates.full_name = fullName;
     if (phone !== undefined) updates.phone = phone;
 
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();

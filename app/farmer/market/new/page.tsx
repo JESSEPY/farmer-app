@@ -60,7 +60,7 @@ export default function NewListingPage() {
 
       toast.success("Listing posted successfully");
       router.push("/farmer/market");
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);

@@ -15,10 +15,11 @@ export interface Listing {
 }
 
 export interface ListingWithFarmer extends Listing {
+  // null when the seller profile is not readable by the current user
   farmer: {
     full_name: string | null;
     phone: string | null;
-  };
+  } | null;
 }
 
 export interface CreateListingInput {

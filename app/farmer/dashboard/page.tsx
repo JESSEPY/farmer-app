@@ -9,6 +9,7 @@ import { CropSummary } from "@/components/dashboard/crop-summary";
 import { ExpenseSummary } from "@/components/dashboard/expense-summary";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { PageContainer } from "@/components/layout/page-container";
+import type { Planting, PlantingCrop } from "@/lib/types";
 
 export default function FarmerDashboard() {
   const [activeListings, setActiveListings] = useState(0);
@@ -19,7 +20,7 @@ export default function FarmerDashboard() {
     fetch("/api/listings/mine")
       .then((res) => res.json())
       .then((data) => {
-        const active = (data.listings || []).filter((l: any) => l.status === "active").length;
+        const active = (data.listings || []).filter((l: { status: string }) => l.status === "active").length;
         setActiveListings(active);
       })
       .catch(() => {});
@@ -32,9 +33,9 @@ export default function FarmerDashboard() {
         // Sample (demo) crops are not the farmer own, so do not count them.
         const plantings = data.sample ? [] : data.plantings || [];
         setActiveCrops(plantings.length);
-        const ready = plantings.reduce((count: number, p: any) => {
+        const ready = plantings.reduce((count: number, p: Planting) => {
           const crops = p.crops || [];
-          return count + crops.filter((c: any) => c.status === "harvest-ready").length;
+          return count + crops.filter((c: PlantingCrop) => c.status === "harvest-ready").length;
         }, 0);
         setReadyToHarvest(ready);
       })

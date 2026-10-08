@@ -44,13 +44,12 @@ export default function FarmerProfilePage() {
     fetch("/api/listings/mine")
       .then((res) => res.json())
       .then((data) => {
-        const active = (data.listings || []).filter((l: any) => l.status === "active").length;
+        const active = (data.listings || []).filter((l: { status: string }) => l.status === "active").length;
         setListingCount(String(active));
       })
       .catch(() => {});
   }, []);
 
-  const isFarmer = profile?.role === "farmer";
   const stats = defaultStats.map((s) =>
     s.label === "Market Listings"
       ? { ...s, value: listingCount }

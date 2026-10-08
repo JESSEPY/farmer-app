@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
       if (file.size === 0) continue;
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from("listing-photos")
         .upload(fileName, file, {
           contentType: file.type,

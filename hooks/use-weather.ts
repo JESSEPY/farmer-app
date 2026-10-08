@@ -44,68 +44,75 @@ const DEFAULT_LOCATION = { latitude: 12.3711, longitude: 123.6239 };
 
 export function useWeather(): UseWeatherResult {
   const [state, setState] = useState<WeatherState>(getInitialState);
+  const [reloadCount, setReloadCount] = useState(0);
   const { weather, loading, error } = state;
 
-  const loadWeather = useCallback(async (latitude: number, longitude: number) => {
-    try {
-      const { data } = await apiClient<{ data: WeatherData }>("weather", {
-        method: "POST",
-        body: JSON.stringify({ latitude, longitude }),
-      });
-      setState({ weather: data, loading: false, error: null });
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to fetch weather";
-      setState({ weather: null, loading: false, error: errorMsg });
-    }
-  }, []);
-
-  const fetchWeatherData = useCallback(async () => {
-    // Use the device location only if the user has already allowed it; otherwise show
-    // Masbate City right away instead of waiting on (or nagging with) a permission prompt.
-    let usePosition = false;
-    try {
-      if (navigator.geolocation && navigator.permissions) {
-        const status = await navigator.permissions.query({ name: "geolocation" });
-        usePosition = status.state === "granted";
-      }
-    } catch {
-      usePosition = false;
-    }
-
-    if (!usePosition) {
-      loadWeather(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
-      return;
-    }
-
-    // Some desktops never answer a position request, so fall back to Masbate City
-    // if it takes too long. Whichever finishes first wins.
-    let settled = false;
-    const settle = (lat: number, lng: number) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(fallbackTimer);
-      loadWeather(lat, lng);
-    };
-    const fallbackTimer = setTimeout(
-      () => settle(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude),
-      4000
-    );
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => settle(position.coords.latitude, position.coords.longitude),
-      () => settle(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude),
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
-    );
-  }, [loadWeather]);
-
   useEffect(() => {
-    fetchWeatherData();
-  }, [fetchWeatherData]);
+    let cancelled = false;
+    let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const loadWeather = async (latitude: number, longitude: number) => {
+      try {
+        const { data } = await apiClient<{ data: WeatherData }>("weather", {
+          method: "POST",
+          body: JSON.stringify({ latitude, longitude }),
+        });
+        if (!cancelled) setState({ weather: data, loading: false, error: null });
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : "Failed to fetch weather";
+        if (!cancelled) setState({ weather: null, loading: false, error: errorMsg });
+      }
+    };
+
+    const run = async () => {
+      // Use the device location only if the user has already allowed it; otherwise show
+      // Masbate City right away instead of waiting on (or nagging with) a permission prompt.
+      let usePosition = false;
+      try {
+        if (navigator.geolocation && navigator.permissions) {
+          const status = await navigator.permissions.query({ name: "geolocation" });
+          usePosition = status.state === "granted";
+        }
+      } catch {
+        usePosition = false;
+      }
+      if (cancelled) return;
+
+      if (!usePosition) {
+        loadWeather(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude);
+        return;
+      }
+
+      // Some desktops never answer a position request, so fall back to Masbate City
+      // if it takes too long. Whichever finishes first wins.
+      let settled = false;
+      const settle = (lat: number, lng: number) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(fallbackTimer);
+        loadWeather(lat, lng);
+      };
+      fallbackTimer = setTimeout(() => settle(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude), 4000);
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => settle(position.coords.latitude, position.coords.longitude),
+        () => settle(DEFAULT_LOCATION.latitude, DEFAULT_LOCATION.longitude),
+        { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      );
+    };
+
+    run();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(fallbackTimer);
+    };
+  }, [reloadCount]);
 
   const refresh = useCallback(() => {
     setState({ weather: null, loading: true, error: null });
-    fetchWeatherData();
-  }, [fetchWeatherData]);
+    setReloadCount((n) => n + 1);
+  }, []);
 
   const currentCondition = weather
     ? getWeatherLabel(weather.current.weatherCode)

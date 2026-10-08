@@ -12,6 +12,7 @@ import { PageContainer } from "@/components/layout/page-container";
 import { formatPhone, smsHref } from "@/lib/phone";
 import { ImageGallery } from "@/components/market/image-gallery";
 import { cn } from "@/lib/utils";
+import type { ListingWithFarmer } from "@/lib/types";
 
 interface ListingDetailProps {
   params: Promise<{ id: string }>;
@@ -25,7 +26,7 @@ const gradeColors: Record<string, string> = {
 
 export default function ListingDetailPage({ params }: ListingDetailProps) {
   const { id } = use(params);
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<ListingWithFarmer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

@@ -11,9 +11,10 @@ import { ListingCard } from "@/components/market/listing-card";
 import { ListingCardSkeleton } from "@/components/market/listing-card-skeleton";
 import { DeleteListingDialog } from "@/components/market/delete-listing-dialog";
 import { toast } from "sonner";
+import type { ListingWithFarmer } from "@/lib/types";
 
 export default function MyListingsPage() {
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<ListingWithFarmer[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("active");
@@ -24,31 +25,47 @@ export default function MyListingsPage() {
     title: "",
   });
 
-  const fetchListings = async () => {
+  const [reloadCount, setReloadCount] = useState(0);
+
+  // The page starts with loading=true, so the first load needs no state reset.
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const res = await fetch("/api/listings/mine");
+        if (cancelled) return;
+        if (!res.ok) {
+          setFetchError(true);
+          toast.error("Failed to fetch listings");
+          return;
+        }
+        const data = await res.json();
+        if (!cancelled) setListings(data.listings || []);
+      } catch {
+        if (!cancelled) {
+          setFetchError(true);
+          toast.error("Failed to fetch listings");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [reloadCount]);
+
+  // Used for refreshes after the first load (retry, archive, restore, delete).
+  const fetchListings = () => {
     setLoading(true);
     setFetchError(false);
-    try {
-      const res = await fetch("/api/listings/mine");
-      if (!res.ok) {
-        setFetchError(true);
-        toast.error("Failed to fetch listings");
-        return;
-      }
-      const data = await res.json();
-      setListings(data.listings || []);
-    } catch {
-      setFetchError(true);
-      toast.error("Failed to fetch listings");
-    } finally {
-      setLoading(false);
-    }
+    setReloadCount((n) => n + 1);
   };
 
-  useEffect(() => {
-    fetchListings();
-  }, []);
-
-  const filteredListings = listings.filter((item: any) => {
+  const filteredListings = listings.filter((item) => {
     const matchesStatus = statusFilter === "all" || item.status === statusFilter;
     const searchTerm = search.toLowerCase();
     const matchesSearch =
@@ -144,7 +161,7 @@ export default function MyListingsPage() {
                   {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"} found
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredListings.map((item: any) => (
+                  {filteredListings.map((item) => (
                     <ListingCard
                       key={item.id}
                       id={item.id}
