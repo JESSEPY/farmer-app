@@ -27,8 +27,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (result && result.length > 0) {
-      return NextResponse.json({ plantings: result });
+      return NextResponse.json({ plantings: result, sample: false });
     }
+
+    // Demo: a farmer with no crops yet sees clearly-labelled sample crops (read-only).
 
     let plantings = MOCK_PLANTINGS.filter((p) => {
       if (p.status !== status) return false;
@@ -41,11 +43,10 @@ export async function GET(request: NextRequest) {
       plantings = plantings.slice(0, parseInt(limit, 10));
     }
 
-    return NextResponse.json({ plantings });
+    return NextResponse.json({ plantings, sample: true });
   } catch (err) {
     console.error("Crops GET error:", err);
-    const { MOCK_PLANTINGS } = await import("@/lib/mock/crops");
-    return NextResponse.json({ plantings: MOCK_PLANTINGS });
+    return NextResponse.json({ error: "Failed to fetch crops" }, { status: 500 });
   }
 }
 
@@ -71,43 +72,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ planting: result }, { status: 201 });
     }
 
-    const newId = `mock-${Date.now()}`;
-    const newCrops = crops.map((crop, i) => ({
-      id: `${newId}-crop-${i}`,
-      planting_id: newId,
-      crop_type: crop.crop_type,
-      variety: crop.variety || null,
-      area_ha: crop.area_ha || null,
-      expected_harvest_date: crop.expected_harvest_date || null,
-      status: "planted" as const,
-      current_stage: null,
-      is_main: crop.is_main !== false,
-      planted_date: crop.planted_date || planting_date,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }));
-
-    const newPlanting = {
-      id: newId,
-      farmer_id: "farmer-mock-001",
-      field_name,
-      municipality,
-      area_ha,
-      season,
-      season_year,
-      planting_date,
-      budget_amount: body.budget_amount || 0,
-      notes: body.notes || null,
-      status: "active" as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      crops: newCrops,
-      activities: [],
-      harvests: [],
-      expense_total: 0,
-    };
-
-    return NextResponse.json({ planting: newPlanting }, { status: 201 });
+    return NextResponse.json({ error: "Could not save your crop. Please try again." }, { status: 500 });
   } catch (err) {
     console.error("Crops POST error:", err);
     return NextResponse.json({ error: "Failed to create planting" }, { status: 500 });

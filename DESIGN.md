@@ -1,5 +1,5 @@
 ---
-name: Masbate Farmer App
+name: Kita-Ani
 description: A fresh, vital agricultural intelligence platform — structured, layered, and purposeful like a well-planned farm.
 colors:
   forest-green: "#2e7d32"
@@ -139,7 +139,7 @@ components:
     rounded: "{rounded.xl2}"
 ---
 
-# Design System: Masbate Farmer App
+# Design System: Kita-Ani
 
 ## 1. Overview
 

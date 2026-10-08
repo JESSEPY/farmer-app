@@ -3,22 +3,11 @@
 import { CloudSun, MapPin, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
-
-interface WeatherData {
-  temp: number;
-  condition: string;
-  humidity: number;
-  wind: number;
-}
-
-const mockWeather: WeatherData = {
-  temp: 28,
-  condition: "Partly Cloudy",
-  humidity: 75,
-  wind: 12,
-};
+import { useWeather } from "@/hooks/use-weather";
 
 export function Header() {
+  const { weather, loading, currentCondition } = useWeather();
+
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">
       <div className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 lg:px-6">
@@ -33,12 +22,14 @@ export function Header() {
           {/* Weather Widget - hidden on small mobile */}
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50">
             <CloudSun className="w-5 h-5 text-warning" />
-            <div className="flex items-center gap-1">
-              <span className="text-sm font-semibold">{mockWeather.temp}°C</span>
-              <span className="text-xs text-muted-foreground hidden md:inline">
-                {mockWeather.condition}
-              </span>
-            </div>
+            {weather ? (
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-semibold">{Math.round(weather.current.temperature)}°C</span>
+                <span className="text-xs text-muted-foreground hidden md:inline">{currentCondition}</span>
+              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground">{loading ? "Loading..." : "Weather unavailable"}</span>
+            )}
           </div>
 
           {/* Theme Toggle */}

@@ -8,13 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageContainer } from "@/components/layout/page-container";
+import { EditProfileDialog } from "@/components/profile/edit-profile-dialog";
+import { formatPhone } from "@/lib/phone";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const defaultBuyerStats = [
-  { label: "Available Listings", value: "12" },
+  { label: "Available Listings", value: "-" },
   { label: "Favorites", value: "5" },
   { label: "Reviews", value: "8" },
-  { label: "Spent", value: "$240" },
+  { label: "Spent", value: "₱2,400" },
 ];
 
 const settings = [
@@ -28,7 +30,7 @@ export default function BuyerProfilePage() {
   const { user, profile, loading, signOut } = useAuth();
   const router = useRouter();
 
-  const [totalListings, setTotalListings] = useState("12");
+  const [totalListings, setTotalListings] = useState("-");
 
   useEffect(() => {
     fetch("/api/listings")
@@ -93,14 +95,15 @@ export default function BuyerProfilePage() {
                   <MapPin className="w-4 h-4" />
                   <span className="text-sm">{profile?.email}</span>
                 </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {profile?.phone ? formatPhone(profile.phone) : "No phone number yet"}
+                </p>
                 <p className="text-sm text-muted-foreground mt-2">
                   Member since {memberSince}
                 </p>
               </div>
 
-              <Button variant="outline" className="cursor-pointer">
-                Edit Profile
-              </Button>
+              <EditProfileDialog />
             </div>
 
             {/* Stats */}

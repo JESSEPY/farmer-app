@@ -11,7 +11,7 @@ export async function GET(
 
     const { data: listing, error } = await supabase
       .from("listings")
-      .select("*, farmer:farmer_id(full_name, email, phone)")
+      .select("*, farmer:farmer_id(full_name, phone)")
       .eq("id", id)
       .single();
 
@@ -62,7 +62,7 @@ export async function PUT(
     }
 
     const formData = await request.formData();
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
 
     const textFields = ["crop", "quantity", "grade", "municipality", "description", "harvest_date", "status"];
     for (const field of textFields) {

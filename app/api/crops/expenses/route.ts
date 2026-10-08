@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getExpenses, createExpense } from "@/lib/services/crop-service";
-import { MOCK_EXPENSES, MOCK_PLANTINGS } from "@/lib/mock/crops";
+import { MOCK_EXPENSES, MOCK_PLANTINGS, isSampleId } from "@/lib/mock/crops";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,13 +16,17 @@ export async function GET(request: NextRequest) {
     const plantingId = searchParams.get("planting_id") || undefined;
     const farmWide = searchParams.get("farm-wide");
 
-    const result = await getExpenses(plantingId, farmWide === "true");
-
-    if (result) {
-      return NextResponse.json({ expenses: result.expenses, total: result.total });
+    if (plantingId && !isSampleId(plantingId)) {
+      const result = await getExpenses(plantingId, false);
+      return NextResponse.json({ expenses: result?.expenses ?? [], total: result?.total ?? 0, sample: false });
     }
 
     if (farmWide === "true") {
+      const result = await getExpenses(undefined, true);
+      if (result && result.expenses.length > 0) {
+        return NextResponse.json({ expenses: result.expenses, total: result.total, sample: false });
+      }
+
       const allExpenses = MOCK_EXPENSES.map((e) => ({
         ...e,
         planting: MOCK_PLANTINGS.find((p) => p.id === e.planting_id)
@@ -31,7 +35,7 @@ export async function GET(request: NextRequest) {
       }));
 
       const total = allExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
-      return NextResponse.json({ expenses: allExpenses, total });
+      return NextResponse.json({ expenses: allExpenses, total, sample: true });
     }
 
     if (!plantingId) {
@@ -41,7 +45,7 @@ export async function GET(request: NextRequest) {
     const expenses = MOCK_EXPENSES.filter((e) => e.planting_id === plantingId);
     const total = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
-    return NextResponse.json({ expenses, total });
+    return NextResponse.json({ expenses, total, sample: true });
   } catch (err) {
     console.error("Expenses GET error:", err);
     return NextResponse.json({ error: "Failed to fetch expenses" }, { status: 500 });
@@ -64,6 +68,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (isSampleId(planting_id)) {
+      return NextResponse.json({ error: "This is sample data and cannot be edited. Add your own crop first." }, { status: 400 });
+    }
+
     const result = await createExpense({
       planting_id,
       category,
@@ -77,19 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ expense: result }, { status: 201 });
     }
 
-    const newExpense = {
-      id: `mock-exp-${Date.now()}`,
-      planting_id,
-      category,
-      amount,
-      date,
-      description: description || null,
-      receipt_photo: null,
-      activity_id: activity_id || null,
-      created_at: new Date().toISOString(),
-    };
-
-    return NextResponse.json({ expense: newExpense }, { status: 201 });
+    return NextResponse.json({ error: "Could not save the expense. Please try again." }, { status: 500 });
   } catch (err) {
     console.error("Expenses POST error:", err);
     return NextResponse.json({ error: "Failed to create expense" }, { status: 500 });

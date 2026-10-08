@@ -18,9 +18,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/layout/page-container";
+import { formatPhone, smsHref } from "@/lib/phone";
 import { ImageGallery } from "@/components/market/image-gallery";
 import { cropTypes, municipalities } from "@/lib/constants/market";
 import { cn } from "@/lib/utils";
+import type { ListingWithFarmer } from "@/lib/types";
 
 interface ListingDetailProps {
   params: Promise<{ id: string }>;
@@ -36,7 +38,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   const router = useRouter();
   const { id } = use(params);
   const { user } = useAuth();
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<ListingWithFarmer | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
@@ -58,7 +60,18 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
         const res = await fetch(`/api/listings/${id}`);
         if (!res.ok) { setLoading(false); return; }
         const data = await res.json();
-        setListing(data.listing);
+        const fetched: ListingWithFarmer | null = data.listing;
+        setListing(fetched);
+        if (fetched && new URLSearchParams(window.location.search).get("edit") === "true") {
+          setEditCrop(fetched.crop || "");
+          setEditMunicipality(municipalities.includes(fetched.municipality) ? fetched.municipality : "");
+          setEditQuantity(fetched.quantity || "");
+          setEditPrice(fetched.price?.toString() || "");
+          setEditGrade(fetched.grade || "");
+          setEditHarvestDate(fetched.harvest_date || "");
+          setEditDescription(fetched.description || "");
+          setIsEditing(true);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -68,23 +81,10 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
     fetchListing();
   }, [id]);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("edit") === "true" && listing) {
-      setEditCrop(listing.crop || "");
-      setEditMunicipality(listing.municipality || "");
-      setEditQuantity(listing.quantity || "");
-      setEditPrice(listing.price?.toString() || "");
-      setEditGrade(listing.grade || "");
-      setEditHarvestDate(listing.harvest_date || "");
-      setEditDescription(listing.description || "");
-      setIsEditing(true);
-    }
-  }, [listing]);
-
-  const populateEditFields = (listing: any) => {
+  const populateEditFields = (listing: ListingWithFarmer) => {
     setEditCrop(listing.crop || "");
-    setEditMunicipality(listing.municipality || "");
+    // Old listings may use a name that is not a real Masbate municipality: make the seller pick one.
+    setEditMunicipality(municipalities.includes(listing.municipality) ? listing.municipality : "");
     setEditQuantity(listing.quantity || "");
     setEditPrice(listing.price?.toString() || "");
     setEditGrade(listing.grade || "");
@@ -93,12 +93,13 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const startEditing = () => {
+    if (!listing) return;
     populateEditFields(listing);
     setIsEditing(true);
   };
 
   const cancelEditing = () => {
-    populateEditFields(listing);
+    if (listing) populateEditFields(listing);
     setIsEditing(false);
     setEditPhotos([]);
     setRemovedPhotos([]);
@@ -146,8 +147,9 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const handleRemovePhoto = (index: number) => {
+    if (!listing) return;
     const removedUrl = listing.photos[index];
-    const updatedPhotos = listing.photos.filter((_: any, i: number) => i !== index);
+    const updatedPhotos = listing.photos.filter((_: string, i: number) => i !== index);
     setListing({ ...listing, photos: updatedPhotos });
     setRemovedPhotos((prev) => [...prev, removedUrl]);
   };
@@ -261,6 +263,12 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  {listing && !municipalities.includes(listing.municipality) && (
+                    <p className="text-xs text-amber-600">
+                      &ldquo;{listing.municipality}&rdquo; is not a municipality of Masbate. Please choose the correct one so
+                      buyers can find this listing on the map.
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="editQuantity">Quantity *</Label>
@@ -423,7 +431,9 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                     Verified
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">{listing.farmer?.email}</p>
+                {listing.farmer?.phone && (
+                  <p className="text-xs text-muted-foreground mt-1">{formatPhone(listing.farmer.phone)}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -433,7 +443,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
           {listing.farmer?.phone ? (
             <a href={`tel:${listing.farmer.phone}`} className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer">
               <Phone className="w-4 h-4 mr-2" />
-              Call {listing.farmer.phone}
+              Call {formatPhone(listing.farmer.phone)}
             </a>
           ) : (
             <Button disabled className="cursor-not-allowed">
@@ -441,10 +451,17 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
               No Contact Number
             </Button>
           )}
-          <Button variant="outline" className="cursor-pointer">
+          {listing.farmer?.phone ? (
+            <a href={smsHref(listing.farmer.phone)} className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Send Message
+          </a>
+            ) : (
+            <Button variant="outline" disabled className="cursor-not-allowed">
             <MessageCircle className="w-4 h-4 mr-2" />
             Send Message
           </Button>
+            )}
         </div>
 
         <DeleteListingDialog

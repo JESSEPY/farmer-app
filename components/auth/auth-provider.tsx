@@ -4,15 +4,16 @@ import { createClient } from "@/lib/supabase/client";
 import { Profile, UserRole } from "@/lib/supabase/types";
 import type { User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { signIn as signInUser, signUp as signUpUser, signOut as signOutUser, getCurrentUser } from "@/lib/services/auth-service";
+import { signIn as signInUser, signUp as signUpUser, signOut as signOutUser, getCurrentUser, updateProfile as updateProfileUser } from "@/lib/services/auth-service";
 
 export interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, role: UserRole, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, role: UserRole, fullName: string, phone: string) => Promise<{ error: Error | null; needsVerification?: boolean }>;
   signOut: () => Promise<void>;
+  updateProfile: (updates: { full_name: string; phone: string }) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,14 +57,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return { error };
 };
 
-  const signUp = async (email: string, password: string, role: UserRole, fullName: string) => {
-  const { user, error } = await signUpUser(email, password, role, fullName);
-  if (!error && user) {
+  const signUp = async (email: string, password: string, role: UserRole, fullName: string, phone: string) => {
+  const { user, error, needsVerification } = await signUpUser(email, password, role, fullName, phone);
+  if (!error && user && !needsVerification) {
     const { profile } = await getCurrentUser();
     setUser(user);
     setProfile(profile);
   }
-  return { error: error || null };
+  return { error: error || null, needsVerification };
+};
+
+  const updateProfile = async (updates: { full_name: string; phone: string }) => {
+  if (!user) return { error: new Error("Not signed in") };
+  const { profile: updated, error } = await updateProfileUser(user.id, updates);
+  if (!error && updated) setProfile(updated);
+  return { error };
 };
 
   const signOut = async () => {
@@ -73,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, profile, loading, signIn, signUp, signOut, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

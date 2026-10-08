@@ -37,7 +37,7 @@ export function Navigation({ role = "farmer" }: { role?: "farmer" | "buyer" }) {
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
               <Sprout className="w-4 h-4 text-primary-foreground" />
             </div>
-            Farmer App
+            Kita-Ani
           </h1>
           <p className="text-xs text-muted-foreground mt-1">Masbate Marketplace</p>
         </div>
@@ -70,7 +70,7 @@ export function Navigation({ role = "farmer" }: { role?: "farmer" | "buyer" }) {
 
         <div className="p-4 border-t border-border">
           <p className="text-xs text-muted-foreground text-center">
-            v1.0.0 • Masbate Farmers
+            v1.0.0 • Kita-Ani
           </p>
         </div>
       </aside>

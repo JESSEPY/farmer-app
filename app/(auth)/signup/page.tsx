@@ -7,12 +7,19 @@ import { useAuth, UserRole } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sprout, ShoppingBag } from "lucide-react";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { isValidLocalPhone, toE164 } from "@/lib/phone";
+import { PasswordInput } from "@/components/ui/password-input";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sprout, ShoppingBag, MailCheck } from "lucide-react";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>("farmer");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,10 +37,28 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await signUp(email, password, role, fullName);
+    if (!isValidLocalPhone(phone)) {
+      setError("Enter a valid Philippine mobile number (e.g. 912 345 6789).");
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      setLoading(false);
+      return;
+    }
+
+    const { error, needsVerification } = await signUp(email, password, role, fullName, toE164(phone));
     if (error) {
       setError(error.message);
       setLoading(false);
+      return;
+    }
+
+    if (needsVerification) {
+      setLoading(false);
+      setShowVerifyModal(true);
       return;
     }
 
@@ -45,7 +70,7 @@ export default function SignupPage() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Create Account</CardTitle>
-        <CardDescription>Join the Masbate Farmer Marketplace</CardDescription>
+        <CardDescription>Join Kita-Ani</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -90,6 +115,10 @@ export default function SignupPage() {
             />
           </div>
           <div>
+            <PhoneInput value={phone} onValueChange={setPhone} required />
+            <p className="mt-1 text-xs text-muted-foreground">Buyers and sellers use this to call you.</p>
+          </div>
+          <div>
             <Input
               type="email"
               placeholder="Email"
@@ -99,11 +128,18 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <Input
-              type="password"
+            <PasswordInput
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <PasswordInput
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
@@ -118,6 +154,24 @@ export default function SignupPage() {
           </p>
         </form>
       </CardContent>
+
+      <Dialog open={showVerifyModal} onOpenChange={setShowVerifyModal}>
+        <DialogContent>
+          <DialogHeader>
+            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <MailCheck className="size-5" />
+            </div>
+            <DialogTitle>Check your email</DialogTitle>
+            <DialogDescription>
+              We sent a verification link to <span className="font-medium text-foreground">{email}</span>.
+              Click the link in the email to verify your account, then sign in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => router.push("/login")}>Go to Sign In</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

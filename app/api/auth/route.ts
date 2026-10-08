@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signIn, signUp, signOut } from "@/lib/services/auth-service";
 import { UserRole } from "@/lib/types/auth";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, email, password, role, fullName } = body;
+    const { action, email, password, role, fullName, phone } = body;
 
     if (action === "signIn") {
       if (!email || !password) {
@@ -59,15 +59,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (action === "signUp") {
-      if (!email || !password || !role || !fullName) {
-        return NextResponse.json({ error: "Email, password, role, and fullName required" }, { status: 400 });
+      if (!email || !password || !role || !fullName || !phone) {
+        return NextResponse.json({ error: "Email, password, role, fullName, and phone required" }, { status: 400 });
       }
 
       if (!["farmer", "buyer"].includes(role)) {
         return NextResponse.json({ error: "Invalid role" }, { status: 400 });
       }
 
-      const { user, error } = await signUp(email, password, role as UserRole, fullName);
+      const { user, error } = await signUp(email, password, role as UserRole, fullName, phone);
 
       if (error || !user) {
         return NextResponse.json({ error: error?.message || "Sign up failed" }, { status: 400 });
@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { fullName, phone } = body;
 
-    const updates: Record<string, any> = {};
+    const updates: Record<string, unknown> = {};
     if (fullName) updates.full_name = fullName;
     if (phone !== undefined) updates.phone = phone;
 
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-export async function DELETE(request: NextRequest) {
+export async function DELETE() {
   try {
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();

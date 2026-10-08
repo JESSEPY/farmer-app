@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Receipt } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiClient } from "@/lib/api/client";
+import { SampleDataTag } from "@/components/crops/sample-data-banner";
 import { Expense, EXPENSE_CATEGORIES } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -40,11 +41,13 @@ export function ExpenseSummary() {
   const [categories, setCategories] = useState<CategorySummary[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sample, setSample] = useState(false);
 
   useEffect(() => {
-    apiClient<{ expenses: Expense[]; total: number }>("crops/expenses?farm-wide=true")
+    apiClient<{ expenses: Expense[]; total: number; sample?: boolean }>("crops/expenses?farm-wide=true")
       .then((res) => {
         setTotal(res.total);
+        setSample(!!res.sample);
         const catMap = new Map<string, number>();
         for (const exp of res.expenses) {
           catMap.set(exp.category, (catMap.get(exp.category) || 0) + Number(exp.amount));
@@ -72,6 +75,7 @@ export function ExpenseSummary() {
         <CardTitle className="text-[17px] font-semibold flex items-center gap-2">
           <Receipt className="w-5 h-5 text-primary" />
           Season Expenses
+          {sample && <SampleDataTag />}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 px-3 sm:px-4 pb-3 sm:pb-4">

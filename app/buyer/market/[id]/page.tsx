@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/layout/page-container";
+import { formatPhone, smsHref } from "@/lib/phone";
 import { ImageGallery } from "@/components/market/image-gallery";
 import { cn } from "@/lib/utils";
+import type { ListingWithFarmer } from "@/lib/types";
 
 interface ListingDetailProps {
   params: Promise<{ id: string }>;
@@ -24,7 +26,7 @@ const gradeColors: Record<string, string> = {
 
 export default function ListingDetailPage({ params }: ListingDetailProps) {
   const { id } = use(params);
-  const [listing, setListing] = useState<any>(null);
+  const [listing, setListing] = useState<ListingWithFarmer | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -178,7 +180,9 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                     Verified
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1 truncate">{listing.farmer?.email}</p>
+                {listing.farmer?.phone && (
+                  <p className="text-xs text-muted-foreground mt-1">{formatPhone(listing.farmer.phone)}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -188,7 +192,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
           {listing.farmer?.phone ? (
             <a href={`tel:${listing.farmer.phone}`} className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 cursor-pointer">
               <Phone className="w-4 h-4 mr-2" />
-              Call {listing.farmer.phone}
+              Call {formatPhone(listing.farmer.phone)}
             </a>
           ) : (
             <Button disabled className="cursor-not-allowed">
@@ -196,10 +200,17 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
               No Contact Number
             </Button>
           )}
-          <Button variant="outline" className="cursor-pointer">
+          {listing.farmer?.phone ? (
+            <a href={smsHref(listing.farmer.phone)} className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Send Message
+          </a>
+            ) : (
+            <Button variant="outline" disabled className="cursor-not-allowed">
             <MessageCircle className="w-4 h-4 mr-2" />
             Send Message
           </Button>
+            )}
         </div>
       </div>
     </PageContainer>

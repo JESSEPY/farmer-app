@@ -1,7 +1,7 @@
-# Product Specification: Masbate Farmer App
+# Product Specification: Kita-Ani
 
 ## 1. Executive Overview
-The **Masbate Farmer App** is a specialized digital ecosystem designed to empower farmers in the Masbate region. It bridges the gap between traditional farming practices and modern technology by providing farmers with data-driven tools, resource management, and AI-assisted guidance to optimize crop yields and improve livelihoods.
+**Kita-Ani** is a specialized digital ecosystem designed to empower farmers in the Masbate region. It bridges the gap between traditional farming practices and modern technology by providing farmers with data-driven tools, resource management, and AI-assisted guidance to optimize crop yields and improve livelihoods.
 
 ## 2. Product Mission
 To modernize agriculture in Masbate by democratizing access to agricultural intelligence, providing real-time resource tracking, and fostering a sustainable farming community through an intuitive, accessible digital interface.
@@ -43,7 +43,7 @@ The product is built on a modern, high-performance stack designed for scalabilit
 - **State/Data Fetching:** Supabase SSR
 
 ## 6. Product Differentiation
-Unlike generic agricultural apps, the Masbate Farmer App is:
+Unlike generic agricultural apps, Kita-Ani is:
 - **Region-Specific:** Tailored to the unique environmental and social context of the Masbate region.
 - **AI-First:** Deeply integrated AI that acts as a virtual agricultural consultant rather than just a data entry tool.
 - **Geospatial-Centric:** Uses mapping as a primary interaction method for resource management.

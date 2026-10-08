@@ -10,9 +10,10 @@ import { MarketMap } from "@/components/market/market-map";
 import { ListingCard } from "@/components/market/listing-card";
 import { ListingCardSkeleton } from "@/components/market/listing-card-skeleton";
 import { cropTypes, municipalities, sortOptions } from "@/lib/constants/market";
+import type { ListingWithFarmer } from "@/lib/types";
 
 export default function BuyerMarketPage() {
-  const [listings, setListings] = useState<any[]>([]);
+  const [listings, setListings] = useState<ListingWithFarmer[]>([]);
   const [search, setSearch] = useState("");
   const [cropFilter, setCropFilter] = useState("all");
   const [municipalityFilter, setMunicipalityFilter] = useState("all");
@@ -168,7 +169,7 @@ export default function BuyerMarketPage() {
                   {listings.length} {listings.length === 1 ? "listing" : "listings"} found
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {listings.map((item: any) => (
+                  {listings.map((item) => (
                     <ListingCard
                       key={item.id}
                       id={item.id}

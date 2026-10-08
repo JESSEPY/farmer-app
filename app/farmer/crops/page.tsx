@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageContainer } from "@/components/layout/page-container";
 import { PlantingCard } from "@/components/crops/planting-card";
 import { apiClient } from "@/lib/api/client";
+import { SampleDataBanner } from "@/components/crops/sample-data-banner";
 import type { Planting } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -34,10 +35,14 @@ function getCurrentSeasonKey(): string {
 export default function CropsPage() {
   const [plantings, setPlantings] = useState<Planting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sample, setSample] = useState(false);
 
   useEffect(() => {
-    apiClient<{ plantings: Planting[] }>("crops")
-      .then((data) => setPlantings(data.plantings))
+    apiClient<{ plantings: Planting[]; sample?: boolean }>("crops")
+      .then((data) => {
+        setPlantings(data.plantings);
+        setSample(!!data.sample);
+      })
       .catch(() => toast.error("Failed to load crops"))
       .finally(() => setLoading(false));
   }, []);
@@ -82,6 +87,8 @@ export default function CropsPage() {
             </Button>
           </Link>
         </div>
+
+        {sample && <SampleDataBanner />}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="p-4 rounded-xl bg-muted/50 text-center">

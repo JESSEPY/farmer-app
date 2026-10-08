@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getPlantingById, updatePlanting, archivePlanting } from "@/lib/services/crop-service";
-import { MOCK_PLANTINGS } from "@/lib/mock/crops";
+import { MOCK_PLANTINGS, isSampleId } from "@/lib/mock/crops";
 
 export async function GET(
   _request: NextRequest,
@@ -10,19 +10,21 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const result = await getPlantingById(id);
-
-    if (result) {
-      return NextResponse.json({ planting: result });
+    if (isSampleId(id)) {
+      const planting = MOCK_PLANTINGS.find((p) => p.id === id);
+      if (!planting) {
+        return NextResponse.json({ error: "Planting not found" }, { status: 404 });
+      }
+      return NextResponse.json({ planting, sample: true });
     }
 
-    const planting = MOCK_PLANTINGS.find((p) => p.id === id);
+    const result = await getPlantingById(id);
 
-    if (!planting) {
+    if (!result) {
       return NextResponse.json({ error: "Planting not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ planting });
+    return NextResponse.json({ planting: result, sample: false });
   } catch (err) {
     console.error("Planting GET error:", err);
     return NextResponse.json({ error: "Failed to fetch planting" }, { status: 500 });
@@ -42,6 +44,9 @@ export async function PUT(
     }
 
     const { id } = await params;
+    if (isSampleId(id)) {
+      return NextResponse.json({ error: "This is sample data and cannot be edited. Add your own crop first." }, { status: 400 });
+    }
     const body = await request.json();
 
     const allowedFields = [
@@ -62,12 +67,7 @@ export async function PUT(
       return NextResponse.json({ planting: result });
     }
 
-    const planting = MOCK_PLANTINGS.find((p) => p.id === id);
-    if (!planting) {
-      return NextResponse.json({ error: "Planting not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ planting: { ...planting, ...updates, updated_at: new Date().toISOString() } });
+    return NextResponse.json({ error: "Planting not found or could not be updated" }, { status: 404 });
   } catch (err) {
     console.error("Planting PUT error:", err);
     return NextResponse.json({ error: "Failed to update planting" }, { status: 500 });
@@ -87,18 +87,16 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    if (isSampleId(id)) {
+      return NextResponse.json({ error: "This is sample data and cannot be archived." }, { status: 400 });
+    }
     const ok = await archivePlanting(id);
 
     if (ok) {
       return NextResponse.json({ message: "Planting archived" });
     }
 
-    const planting = MOCK_PLANTINGS.find((p) => p.id === id);
-    if (!planting) {
-      return NextResponse.json({ error: "Planting not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: "Planting archived" });
+    return NextResponse.json({ error: "Planting not found or could not be archived" }, { status: 404 });
   } catch (err) {
     console.error("Planting DELETE error:", err);
     return NextResponse.json({ error: "Failed to archive planting" }, { status: 500 });
