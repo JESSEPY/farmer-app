@@ -17,7 +17,6 @@ export interface Listing {
 export interface ListingWithFarmer extends Listing {
   farmer: {
     full_name: string | null;
-    email: string;
     phone: string | null;
   };
 }

@@ -1,98 +1,182 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapPin, Leaf } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { MapPin } from "lucide-react";
+import type { DivIcon } from "leaflet";
 import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
+import { MASBATE_MUNICIPALITIES } from "@/lib/constants/market";
+import { DEMO_SUPPLY } from "@/lib/mock/market-demo";
 
-interface Municipality {
+type Availability = "high" | "medium" | "low" | "none";
+
+interface SupplyEntry {
+  municipality: string;
+  crop: string;
+  quantityKg: number;
+  pricePerKg: number;
+  demo: boolean;
+}
+
+interface ApiListing {
+  crop: string;
+  quantity: string;
+  price: number | string;
+  municipality: string;
+}
+
+interface CropTotal {
+  crop: string;
+  kg: number;
+  minPrice: number;
+  maxPrice: number;
+}
+
+interface MunicipalitySupply {
   name: string;
   lat: number;
   lng: number;
-  availability: "high" | "medium" | "low";
   count: number;
+  totalKg: number;
+  hasDemo: boolean;
+  crops: CropTotal[];
+  availability: Availability;
 }
 
-const defaultMunicipalities: Municipality[] = [
-  { name: "Mobo", lat: 12.35, lng: 123.63, availability: "low", count: 0 },
-  { name: "Milagros", lat: 12.23, lng: 123.51, availability: "low", count: 0 },
-  { name: "Aroroy", lat: 12.51, lng: 123.40, availability: "low", count: 0 },
-  { name: "Baleno", lat: 12.46, lng: 123.50, availability: "low", count: 0 },
-  { name: "Balud", lat: 11.82, lng: 123.60, availability: "low", count: 0 },
-  { name: "Cawayan", lat: 11.85, lng: 123.68, availability: "low", count: 0 },
-  { name: "Claveria", lat: 12.15, lng: 123.25, availability: "low", count: 0 },
-  { name: "Dapa", lat: 11.55, lng: 123.95, availability: "low", count: 0 },
-  { name: "Esperanza", lat: 11.78, lng: 124.02, availability: "low", count: 0 },
-  { name: "Mandaon", lat: 12.02, lng: 123.35, availability: "low", count: 0 },
-  { name: "Pilar", lat: 11.68, lng: 123.73, availability: "low", count: 0 },
-  { name: "San Fernando", lat: 11.98, lng: 123.98, availability: "low", count: 0 },
-  { name: "San Jose", lat: 11.62, lng: 123.98, availability: "low", count: 0 },
-  { name: "Uson", lat: 12.25, lng: 123.73, availability: "low", count: 0 },
-];
+// Total kilograms available in a municipality -> how full the pin looks.
+function getAvailability(totalKg: number): Availability {
+  if (totalKg >= 1500) return "high";
+  if (totalKg >= 500) return "medium";
+  if (totalKg > 0) return "low";
+  return "none";
+}
 
-function getAvailability(count: number): "high" | "medium" | "low" {
-  if (count >= 5) return "high";
-  if (count >= 2) return "medium";
-  return "low";
+const PIN_COLORS: Record<Availability, string> = {
+  high: "#16a34a",
+  medium: "#f59e0b",
+  low: "#64748b",
+  none: "#cbd5e1",
+};
+
+const AVAILABILITY_LABEL: Record<Availability, string> = {
+  high: "High availability",
+  medium: "Medium availability",
+  low: "Low availability",
+  none: "No listings yet",
+};
+
+const formatKg = (kg: number) => `${Math.round(kg).toLocaleString("en-PH")} kg`;
+const formatPrice = (n: number) => `₱${Number.isInteger(n) ? n : n.toFixed(2)}`;
+
+function createPinIcon(L: typeof import("leaflet"), supply: MunicipalitySupply): DivIcon {
+  const color = PIN_COLORS[supply.availability];
+  if (supply.availability === "none") {
+    return L.divIcon({
+      className: "",
+      html: `<div style="width:14px;height:14px;border-radius:9999px;background:${color};border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)"></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+      popupAnchor: [0, -9],
+    });
+  }
+
+  // Teardrop pin with the listing count inside.
+  return L.divIcon({
+    className: "",
+    html: `<div style="position:relative;width:34px;height:34px">
+      <div style="position:absolute;inset:0;background:${color};border:2px solid #fff;border-radius:9999px 9999px 9999px 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>
+      <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;line-height:1">${supply.count}</span>
+    </div>`,
+    iconSize: [34, 34],
+    iconAnchor: [17, 34],
+    popupAnchor: [0, -32],
+  });
 }
 
 export function MarketMap() {
-  const [municipalities, setMunicipalities] = useState<Municipality[]>(defaultMunicipalities);
-  const [MapComponents, setMapComponents] = useState<{
-    MapContainer: React.ComponentType<any>;
-    TileLayer: React.ComponentType<any>;
-    Marker: React.ComponentType<any>;
-    Popup: React.ComponentType<any>;
+  const [realEntries, setRealEntries] = useState<SupplyEntry[]>([]);
+  const [showDemo, setShowDemo] = useState(true);
+  const [leaflet, setLeaflet] = useState<{
+    L: typeof import("leaflet");
+    MapContainer: typeof import("react-leaflet").MapContainer;
+    TileLayer: typeof import("react-leaflet").TileLayer;
+    Marker: typeof import("react-leaflet").Marker;
+    Popup: typeof import("react-leaflet").Popup;
   } | null>(null);
 
   useEffect(() => {
     fetch("/api/listings")
       .then((res) => res.json())
       .then((data) => {
-        const counts: Record<string, number> = {};
-        (data.listings || []).forEach((l: any) => {
-          counts[l.municipality] = (counts[l.municipality] || 0) + 1;
-        });
-        setMunicipalities((prev) =>
-          prev.map((m) => ({
-            ...m,
-            count: counts[m.name] || 0,
-            availability: getAvailability(counts[m.name] || 0),
-          }))
-        );
+        const entries: SupplyEntry[] = ((data.listings || []) as ApiListing[]).map((l) => ({
+          municipality: l.municipality,
+          crop: l.crop,
+          quantityKg: parseFloat(l.quantity) || 0,
+          pricePerKg: Number(l.price) || 0,
+          demo: false,
+        }));
+        setRealEntries(entries);
       })
       .catch(() => {});
   }, []);
 
   useEffect(() => {
-    import("react-leaflet").then((mod) => {
-      import("leaflet").then((leaflet) => {
-        delete (leaflet.default as any).Icon.Default.prototype._getIconUrl;
-        leaflet.default.Icon.Default.mergeOptions({
-          iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
-          iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
-          shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
-        });
-
-        setMapComponents({
-          MapContainer: mod.MapContainer,
-          TileLayer: mod.TileLayer,
-          Marker: mod.Marker,
-          Popup: mod.Popup,
-        });
+    Promise.all([import("react-leaflet"), import("leaflet")]).then(([rl, leafletModule]) => {
+      setLeaflet({
+        L: leafletModule.default,
+        MapContainer: rl.MapContainer,
+        TileLayer: rl.TileLayer,
+        Marker: rl.Marker,
+        Popup: rl.Popup,
       });
     });
   }, []);
 
-  const getMarkerColor = (availability: "high" | "medium" | "low") => {
-    switch (availability) {
-      case "high": return "text-green-500";
-      case "medium": return "text-yellow-500";
-      case "low": return "text-gray-400";
-    }
-  };
+  const entries = useMemo<SupplyEntry[]>(
+    () => [...realEntries, ...(showDemo ? DEMO_SUPPLY.map((d) => ({ ...d, demo: true })) : [])],
+    [realEntries, showDemo]
+  );
 
-  if (!MapComponents) {
+  const supplies = useMemo<MunicipalitySupply[]>(() => {
+    return MASBATE_MUNICIPALITIES.map((m) => {
+      const here = entries.filter((e) => e.municipality === m.name);
+      const byCrop = new Map<string, CropTotal>();
+      for (const e of here) {
+        const existing = byCrop.get(e.crop);
+        if (existing) {
+          existing.kg += e.quantityKg;
+          existing.minPrice = Math.min(existing.minPrice, e.pricePerKg);
+          existing.maxPrice = Math.max(existing.maxPrice, e.pricePerKg);
+        } else {
+          byCrop.set(e.crop, { crop: e.crop, kg: e.quantityKg, minPrice: e.pricePerKg, maxPrice: e.pricePerKg });
+        }
+      }
+      const totalKg = here.reduce((sum, e) => sum + e.quantityKg, 0);
+      return {
+        ...m,
+        count: here.length,
+        totalKg,
+        hasDemo: here.some((e) => e.demo),
+        crops: Array.from(byCrop.values()).sort((a, b) => b.kg - a.kg),
+        availability: getAvailability(totalKg),
+      };
+    });
+  }, [entries]);
+
+  const unmappedCount = useMemo(() => {
+    const known = new Set(MASBATE_MUNICIPALITIES.map((m) => m.name));
+    return realEntries.filter((e) => !known.has(e.municipality)).length;
+  }, [realEntries]);
+
+  const totals = useMemo(() => {
+    const active = supplies.filter((s) => s.count > 0);
+    return {
+      listings: active.reduce((sum, s) => sum + s.count, 0),
+      kg: active.reduce((sum, s) => sum + s.totalKg, 0),
+      areas: active.length,
+    };
+  }, [supplies]);
+
+  if (!leaflet) {
     return (
       <Card>
         <CardContent className="p-6">
@@ -107,15 +191,34 @@ export function MarketMap() {
     );
   }
 
-  const { MapContainer, TileLayer, Marker, Popup } = MapComponents;
+  const { L, MapContainer, TileLayer, Marker, Popup } = leaflet;
 
   return (
     <Card>
       <CardContent className="p-0 overflow-hidden rounded-lg">
-        <div className="h-[400px] relative">
+        <div className="flex flex-col gap-2 border-b border-border p-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{totals.listings}</span> listings ·{" "}
+            <span className="font-medium text-foreground">{formatKg(totals.kg)}</span> across{" "}
+            <span className="font-medium text-foreground">{totals.areas}</span> of {MASBATE_MUNICIPALITIES.length}{" "}
+            municipalities
+          </p>
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={showDemo}
+              onChange={(e) => setShowDemo(e.target.checked)}
+              className="h-4 w-4 accent-green-600"
+            />
+            Include sample data
+          </label>
+        </div>
+
+        <div className="h-[520px] relative">
           <MapContainer
-            center={[12.15, 123.65]}
-            zoom={10}
+            center={[12.35, 123.65]}
+            zoom={9}
+            minZoom={8}
             style={{ height: "100%", width: "100%" }}
             scrollWheelZoom={false}
           >
@@ -123,23 +226,50 @@ export function MarketMap() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            {municipalities.map((mun) => (
-              <Marker key={mun.name} position={[mun.lat, mun.lng]}>
+            {supplies.map((s) => (
+              <Marker
+                key={s.name}
+                position={[s.lat, s.lng]}
+                icon={createPinIcon(L, s)}
+                zIndexOffset={s.availability === "none" ? 0 : Math.round(s.totalKg / 10)}
+              >
                 <Popup>
-                  <div className="p-2 min-w-[120px]">
-                    <p className="font-semibold">{mun.name}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Leaf className={cn("w-3 h-3", getMarkerColor(mun.availability))} />
-                      <span className={cn(
-                        "text-xs",
-                        mun.availability === "high" && "text-green-600",
-                        mun.availability === "medium" && "text-yellow-600",
-                        mun.availability === "low" && "text-gray-500"
-                      )}>
-                        {mun.availability.charAt(0).toUpperCase() + mun.availability.slice(1)} Availability
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{mun.count} listing{mun.count !== 1 ? "s" : ""}</p>
+                  <div className="min-w-[190px] text-sm">
+                    <p className="font-semibold text-base leading-tight">{s.name}</p>
+                    <p className="mt-0.5 flex items-center gap-1.5 text-xs">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ background: PIN_COLORS[s.availability] }}
+                      />
+                      {AVAILABILITY_LABEL[s.availability]}
+                    </p>
+
+                    {s.count > 0 ? (
+                      <>
+                        <p className="mt-2 text-xs text-gray-600">
+                          {s.count} {s.count === 1 ? "listing" : "listings"} · {formatKg(s.totalKg)}
+                        </p>
+                        <ul className="mt-1 space-y-0.5 border-t border-gray-200 pt-1.5">
+                          {s.crops.slice(0, 4).map((c) => (
+                            <li key={c.crop} className="flex justify-between gap-3 text-xs">
+                              <span>{c.crop}</span>
+                              <span className="whitespace-nowrap text-gray-600">
+                                {formatKg(c.kg)} ·{" "}
+                                {c.minPrice === c.maxPrice
+                                  ? `${formatPrice(c.minPrice)}/kg`
+                                  : `${formatPrice(c.minPrice)}–${formatPrice(c.maxPrice)}/kg`}
+                              </span>
+                            </li>
+                          ))}
+                          {s.crops.length > 4 && (
+                            <li className="text-xs text-gray-500">+ {s.crops.length - 4} more</li>
+                          )}
+                        </ul>
+                        {s.hasDemo && <p className="mt-1.5 text-[11px] italic text-amber-700">Includes sample data</p>}
+                      </>
+                    ) : (
+                      <p className="mt-2 text-xs text-gray-600">Nothing for sale here right now.</p>
+                    )}
                   </div>
                 </Popup>
               </Marker>
@@ -147,21 +277,24 @@ export function MarketMap() {
           </MapContainer>
         </div>
 
-        <div className="p-4 border-t border-border">
-          <div className="flex flex-wrap gap-4 justify-center">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-500" />
-              <span className="text-sm">High Availability</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-yellow-500" />
-              <span className="text-sm">Medium Availability</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-gray-400" />
-              <span className="text-sm">Low Availability</span>
-            </div>
+        <div className="p-4 border-t border-border space-y-2">
+          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-center">
+            {(["high", "medium", "low", "none"] as Availability[]).map((level) => (
+              <div key={level} className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full" style={{ background: PIN_COLORS[level] }} />
+                <span className="text-sm">
+                  {level === "high" && "High (1,500+ kg)"}
+                  {level === "medium" && "Medium (500+ kg)"}
+                  {level === "low" && "Low (under 500 kg)"}
+                  {level === "none" && "No listings"}
+                </span>
+              </div>
+            ))}
           </div>
+          <p className="text-center text-xs text-muted-foreground">
+            The number on each pin is how many listings are in that municipality. Click a pin for details.
+            {unmappedCount > 0 && ` ${unmappedCount} listing${unmappedCount === 1 ? " is" : "s are"} in areas not shown on the map.`}
+          </p>
         </div>
       </CardContent>
     </Card>

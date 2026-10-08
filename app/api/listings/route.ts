@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("listings")
-      .select("*, farmer:farmer_id(full_name, email, phone)")
+      .select("*, farmer:farmer_id(full_name, phone)")
       .eq("status", "active");
 
     switch (sort) {

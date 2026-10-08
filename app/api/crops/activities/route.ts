@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getActivities, createActivity } from "@/lib/services/crop-service";
-import { MOCK_ACTIVITIES, MOCK_EXPENSES } from "@/lib/mock/crops";
+import { MOCK_ACTIVITIES, MOCK_EXPENSES, isSampleId } from "@/lib/mock/crops";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,10 +20,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "planting_id is required" }, { status: 400 });
     }
 
-    const result = await getActivities(plantingId, type);
-
-    if (result) {
-      return NextResponse.json({ activities: result });
+    if (!isSampleId(plantingId)) {
+      const result = await getActivities(plantingId, type);
+      return NextResponse.json({ activities: result ?? [], sample: false });
     }
 
     let activities = MOCK_ACTIVITIES.filter((a) => a.planting_id === plantingId);
@@ -41,7 +40,7 @@ export async function GET(request: NextRequest) {
         : null,
     }));
 
-    return NextResponse.json({ activities: activitiesWithExpenses });
+    return NextResponse.json({ activities: activitiesWithExpenses, sample: true });
   } catch (err) {
     console.error("Activities GET error:", err);
     return NextResponse.json({ error: "Failed to fetch activities" }, { status: 500 });
@@ -64,6 +63,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (isSampleId(planting_id)) {
+      return NextResponse.json({ error: "This is sample data and cannot be edited. Add your own crop first." }, { status: 400 });
+    }
+
     const result = await createActivity({
       planting_id,
       crop_id,
@@ -81,22 +84,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ activity: result }, { status: 201 });
     }
 
-    const newActivity = {
-      id: `mock-act-${Date.now()}`,
-      planting_id,
-      crop_id: crop_id || null,
-      type,
-      date,
-      notes: notes || null,
-      photos: [],
-      product_name: product_name || null,
-      quantity: quantity || null,
-      unit: unit || null,
-      expense_id: null,
-      created_at: new Date().toISOString(),
-    };
-
-    return NextResponse.json({ activity: newActivity }, { status: 201 });
+    return NextResponse.json({ error: "Could not save the activity. Please try again." }, { status: 500 });
   } catch (err) {
     console.error("Activities POST error:", err);
     return NextResponse.json({ error: "Failed to create activity" }, { status: 500 });

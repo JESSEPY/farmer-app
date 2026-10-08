@@ -29,7 +29,8 @@ export default function FarmerDashboard() {
     fetch("/api/crops")
       .then((res) => res.json())
       .then((data) => {
-        const plantings = data.plantings || [];
+        // Sample (demo) crops are not the farmer own, so do not count them.
+        const plantings = data.sample ? [] : data.plantings || [];
         setActiveCrops(plantings.length);
         const ready = plantings.reduce((count: number, p: any) => {
           const crops = p.crops || [];

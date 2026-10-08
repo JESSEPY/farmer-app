@@ -8,15 +8,17 @@ export async function signIn(email: string, password: string): Promise<{ user: U
   return { user: data?.user || null, error };
 }
 
-export async function signUp(email: string, password: string, role: UserRole, fullName: string): Promise<{ user: User | null; error: Error | null }> {
+export async function signUp(email: string, password: string, role: UserRole, fullName: string, phone: string): Promise<{ user: User | null; error: Error | null; needsVerification: boolean }> {
   const supabase = createClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { data: { full_name: fullName, role } },
+    options: { data: { full_name: fullName, role, phone } },
   });
 
-  return { user: data?.user || null, error };
+  // The profile row is created by the handle_new_user database trigger (from the
+  // metadata above). No session means email confirmation is required before sign in.
+  return { user: data?.user || null, error, needsVerification: !error && !!data?.user && !data.session };
 }
 
 export async function signOut(): Promise<{ error: Error | null }> {

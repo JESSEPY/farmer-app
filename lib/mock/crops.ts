@@ -454,3 +454,8 @@ export const MOCK_PLANTINGS: (Planting & {
     expense_total: 700,
   },
 ];
+
+/** Sample records use fixed IDs starting with these prefixes (see the arrays above). */
+export function isSampleId(id: string | null | undefined): boolean {
+  return !!id && (id.startsWith("p1000000-") || id.startsWith("pc0000000-") || id.startsWith("a0000000-"));
+}

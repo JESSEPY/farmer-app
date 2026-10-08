@@ -22,6 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { PageContainer } from "@/components/layout/page-container";
 import { cn } from "@/lib/utils";
 import { apiClient } from "@/lib/api/client";
+import { SampleDataBanner } from "@/components/crops/sample-data-banner";
 import { ACTIVITY_TYPES } from "@/lib/types";
 import type { Planting } from "@/lib/types";
 import { toast } from "sonner";
@@ -88,10 +89,14 @@ export default function CropDetailPage({ params }: CropDetailProps) {
   const [planting, setPlanting] = useState<Planting | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [sample, setSample] = useState(false);
 
   useEffect(() => {
-    apiClient<{ planting: Planting }>(`crops/${id}`)
-      .then((data) => setPlanting(data.planting))
+    apiClient<{ planting: Planting; sample?: boolean }>(`crops/${id}`)
+      .then((data) => {
+        setPlanting(data.planting);
+        setSample(!!data.sample);
+      })
       .catch((err) => {
         if (err.status === 404) setNotFound(true);
         else toast.error("Failed to load planting");
@@ -165,6 +170,7 @@ export default function CropDetailPage({ params }: CropDetailProps) {
   return (
     <PageContainer>
       <div className="max-w-3xl mx-auto space-y-6">
+        {sample && <SampleDataBanner />}
         {/* Back + Header */}
         <div className="flex items-center gap-4">
           <Link

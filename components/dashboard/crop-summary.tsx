@@ -6,6 +6,7 @@ import { Sprout, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { apiClient } from "@/lib/api/client";
+import { SampleDataTag } from "@/components/crops/sample-data-banner";
 import { Planting } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -61,11 +62,13 @@ function getStatusConfig(status: string) {
 export function CropSummary() {
   const [plantings, setPlantings] = useState<Planting[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sample, setSample] = useState(false);
 
   useEffect(() => {
-    apiClient<{ plantings: Planting[] }>("crops?limit=3")
+    apiClient<{ plantings: Planting[]; sample?: boolean }>("crops?limit=3")
       .then((res) => {
         setPlantings(res.plantings || []);
+        setSample(!!res.sample);
       })
       .catch(() => setPlantings([]))
       .finally(() => setLoading(false));
@@ -77,6 +80,7 @@ export function CropSummary() {
         <CardTitle className="text-[17px] font-semibold flex items-center gap-2">
           <Sprout className="w-5 h-5 text-primary" />
           Active Crops
+          {sample && <SampleDataTag />}
         </CardTitle>
         <Link href="/farmer/crops" className="text-sm text-muted-foreground hover:text-foreground cursor-pointer">
           View All
