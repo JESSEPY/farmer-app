@@ -70,7 +70,7 @@ export default function SignupPage() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Create Account</CardTitle>
-        <CardDescription>Join the Masbate Farmer Marketplace</CardDescription>
+        <CardDescription>Join Kita-Ani</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

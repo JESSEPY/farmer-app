@@ -24,7 +24,7 @@ export function CTASection() {
           Ready to get started?
         </h2>
         <p className="text-lg text-[#6d4c41] dark:text-[#d7cfc4] mb-8 max-w-2xl mx-auto">
-          Join thousands of farmers and buyers already using Masbate Farmer App
+          Join thousands of farmers and buyers already using Kita-Ani
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

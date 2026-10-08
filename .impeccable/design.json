@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-06-23T11:10:00.000Z",
-  "title": "Design System: Masbate Farmer App",
+  "title": "Design System: Kita-Ani",
   "extensions": {
     "colorMeta": {
       "forest-green": { "role": "primary", "displayName": "Forest Green", "canonical": "#2e7d32", "tonalRamp": ["#0a1f0c", "#1b5e20", "#2e7d32", "#388e3c", "#43a047", "#4caf50", "#66bb6a", "#81c784", "#a5d6a7", "#c8e6c9"] },

@@ -14,7 +14,7 @@ const montserrat = Montserrat({
 });
 
 export const metadata: Metadata = {
-  title: "Masbate Farmer App",
+  title: "Kita-Ani",
   description: "Crop management and marketplace for Masbate farmers",
   manifest: "/manifest.json",
 };

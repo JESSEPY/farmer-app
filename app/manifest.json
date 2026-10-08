@@ -1,6 +1,6 @@
 {
-  "name": "Masbate Farmer App",
-  "short_name": "FarmerApp",
+  "name": "Kita-Ani",
+  "short_name": "Kita-Ani",
   "description": "Crop management and marketplace for Masbate farmers",
   "start_url": "/",
   "display": "standalone",
