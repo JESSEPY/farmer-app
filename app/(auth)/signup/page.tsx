@@ -28,7 +28,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (!authLoading && profile) {
-      router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+      router.push(profile.role === "admin" ? "/admin" : profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
     }
   }, [profile, authLoading, router]);
 

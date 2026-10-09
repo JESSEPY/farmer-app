@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth, UserRole } from "@/components/auth/auth-provider";
+import { useAuth } from "@/components/auth/auth-provider";
+import type { AppRole } from "@/lib/supabase/types";
 import { ReactNode, useEffect } from "react";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  allowedRoles: UserRole[];
+  allowedRoles: AppRole[];
   redirectTo?: string;
 }
 
@@ -22,7 +23,9 @@ export function ProtectedRoute({
     if (!loading && (!user || !profile)) {
       router.push(redirectTo);
     } else if (!loading && user && profile && !allowedRoles.includes(profile.role)) {
-      router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+      router.push(
+        profile.role === "admin" ? "/admin" : profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard"
+      );
     }
   }, [user, profile, loading, allowedRoles, redirectTo, router]);
 
