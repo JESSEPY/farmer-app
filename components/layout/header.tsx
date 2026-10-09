@@ -4,6 +4,7 @@ import { CloudSun, MapPin, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { useWeather } from "@/hooks/use-weather";
+import { InstallButton } from "@/components/pwa/install-button";
 
 export function Header() {
   const { weather, loading, currentCondition } = useWeather();
@@ -31,6 +32,8 @@ export function Header() {
               <span className="text-xs text-muted-foreground">{loading ? "Loading..." : "Weather unavailable"}</span>
             )}
           </div>
+
+          <InstallButton />
 
           {/* Theme Toggle */}
           <ThemeToggle />

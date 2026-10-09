@@ -4,6 +4,7 @@ import { HowItWorks } from "@/components/landing/how-it-works";
 import { Testimonials } from "@/components/landing/testimonials";
 import { FeaturesDetail } from "@/components/landing/features-detail";
 import { CTASection } from "@/components/landing/cta-section";
+import { InstallBanner } from "@/components/pwa/install-banner";
 import { GridBackground } from "@/components/landing/grid-background";
 
 export default function LandingPage() {
@@ -17,6 +18,7 @@ export default function LandingPage() {
         <FeaturesDetail />
         <CTASection />
       </main>
+      <InstallBanner />
     </GridBackground>
   );
 }
