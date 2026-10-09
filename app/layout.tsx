@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { PWARegistration } from "@/components/pwa-registration";
+import { InstallProvider } from "@/components/pwa/install-provider";
 import { AuthProvider } from "@/components/auth/auth-provider";
 
 const montserrat = Montserrat({
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
   title: "Kita-Ani",
   description: "Crop management and marketplace for Masbate farmers",
   manifest: "/manifest.json",
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport = {
@@ -36,10 +38,12 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         <ThemeProvider>
           <AuthProvider>
-            <PWARegistration />
-            <main className="flex-1">
-              {children}
-            </main>
+            <InstallProvider>
+              <PWARegistration />
+              <main className="flex-1">
+                {children}
+              </main>
+            </InstallProvider>
           </AuthProvider>
           <Toaster position="top-right" />
         </ThemeProvider>
