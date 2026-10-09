@@ -1,3 +1,4 @@
+-- HISTORY ONLY: not safe to re-run (policies are not guarded). Run supabase/schema.sql instead.
 -- Make new accounts get the role and phone the user chose at signup.
 -- Safe to re-run (create or replace). Run in the Supabase SQL Editor.
 

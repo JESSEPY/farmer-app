@@ -1,3 +1,4 @@
+-- HISTORY ONLY: not safe to re-run (policies are not guarded). Run supabase/schema.sql instead.
 -- ============================================================
 -- CROP TRACKING SYSTEM
 -- Tables for planting registration, intercropping, activity

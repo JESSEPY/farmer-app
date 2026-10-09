@@ -21,7 +21,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && profile) {
-      router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+      router.push(profile.role === "admin" ? "/admin" : profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
     }
   }, [profile, authLoading, router]);
 
@@ -48,7 +48,7 @@ export default function LoginPage() {
         .single();
 
       if (!profileError && profile) {
-        router.push(profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
+        router.push(profile.role === "admin" ? "/admin" : profile.role === "farmer" ? "/farmer/dashboard" : "/buyer/dashboard");
       } else {
         router.push("/farmer/dashboard");
       }

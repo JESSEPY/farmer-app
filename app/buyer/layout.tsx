@@ -14,8 +14,8 @@ export default function BuyerLayout({ children }: { children: React.ReactNode })
     if (!loading) {
       if (!profile) {
         router.push("/login");
-      } else if (profile.role === "farmer") {
-        router.push("/farmer/dashboard");
+      } else if (profile.role !== "buyer") {
+        router.push(profile.role === "admin" ? "/admin" : "/farmer/dashboard");
       }
     }
   }, [profile, loading, router]);

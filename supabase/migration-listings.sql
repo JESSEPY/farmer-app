@@ -1,3 +1,4 @@
+-- HISTORY ONLY: not safe to re-run (policies are not guarded). Run supabase/schema.sql instead.
 -- Add phone column to profiles
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
 
