@@ -206,11 +206,6 @@ export const CROP_TYPES = [
   "Watermelon",
 ] as const;
 
-export const MUNICIPALITIES = [
-  "Mobo", "Milagros", "Aroroy", "Baleno", "Balud", "Cawayan",
-  "Claveria", "Dapa", "Esperanza", "Mandaon", "Pilar",
-  "San Fernando", "San Jose", "Uson",
-] as const;
 
 export const ACTIVITY_TYPES: { value: ActivityType; label: string; icon: string }[] = [
   { value: "land-preparation", label: "Land Preparation", icon: "🚜" },

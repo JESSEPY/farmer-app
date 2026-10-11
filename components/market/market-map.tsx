@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { MapPin } from "lucide-react";
 import type { DivIcon } from "leaflet";
 import { Card, CardContent } from "@/components/ui/card";
-import { MASBATE_MUNICIPALITIES } from "@/lib/constants/market";
+import { MUNICIPALITY_COORDS } from "@/lib/constants/market";
+import { useMunicipalities } from "@/hooks/use-municipalities";
 import { DEMO_SUPPLY } from "@/lib/mock/market-demo";
 
 type Availability = "high" | "medium" | "low" | "none";
@@ -93,6 +94,7 @@ function createPinIcon(L: typeof import("leaflet"), supply: MunicipalitySupply):
 }
 
 export function MarketMap() {
+  const { municipalities } = useMunicipalities();
   const [realEntries, setRealEntries] = useState<SupplyEntry[]>([]);
   const [showDemo, setShowDemo] = useState(true);
   const [leaflet, setLeaflet] = useState<{
@@ -137,7 +139,9 @@ export function MarketMap() {
   );
 
   const supplies = useMemo<MunicipalitySupply[]>(() => {
-    return MASBATE_MUNICIPALITIES.map((m) => {
+    // Only municipalities with known coordinates can be pinned on the map.
+    return municipalities.filter((name) => MUNICIPALITY_COORDS[name]).map((name) => {
+      const m = { name, ...MUNICIPALITY_COORDS[name] };
       const here = entries.filter((e) => e.municipality === m.name);
       const byCrop = new Map<string, CropTotal>();
       for (const e of here) {
@@ -160,12 +164,12 @@ export function MarketMap() {
         availability: getAvailability(totalKg),
       };
     });
-  }, [entries]);
+  }, [entries, municipalities]);
 
   const unmappedCount = useMemo(() => {
-    const known = new Set(MASBATE_MUNICIPALITIES.map((m) => m.name));
+    const known = new Set(municipalities);
     return realEntries.filter((e) => !known.has(e.municipality)).length;
-  }, [realEntries]);
+  }, [realEntries, municipalities]);
 
   const totals = useMemo(() => {
     const active = supplies.filter((s) => s.count > 0);
@@ -200,7 +204,7 @@ export function MarketMap() {
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{totals.listings}</span> listings ·{" "}
             <span className="font-medium text-foreground">{formatKg(totals.kg)}</span> across{" "}
-            <span className="font-medium text-foreground">{totals.areas}</span> of {MASBATE_MUNICIPALITIES.length}{" "}
+            <span className="font-medium text-foreground">{totals.areas}</span> of {municipalities.length}{" "}
             municipalities
           </p>
           <label className="flex cursor-pointer items-center gap-2 text-sm">

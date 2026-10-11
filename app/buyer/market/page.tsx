@@ -9,12 +9,14 @@ import { PageContainer } from "@/components/layout/page-container";
 import { MarketMap } from "@/components/market/market-map";
 import { ListingCard } from "@/components/market/listing-card";
 import { ListingCardSkeleton } from "@/components/market/listing-card-skeleton";
-import { cropTypes, municipalities, sortOptions } from "@/lib/constants/market";
+import { cropTypes, sortOptions } from "@/lib/constants/market";
+import { useMunicipalities } from "@/hooks/use-municipalities";
 import type { ListingWithFarmer } from "@/lib/types";
 
 export default function BuyerMarketPage() {
   const [listings, setListings] = useState<ListingWithFarmer[]>([]);
   const [search, setSearch] = useState("");
+  const { municipalities } = useMunicipalities();
   const [cropFilter, setCropFilter] = useState("all");
   const [municipalityFilter, setMunicipalityFilter] = useState("all");
   const [sort, setSort] = useState("newest");

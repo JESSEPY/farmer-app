@@ -12,11 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { PageContainer } from "@/components/layout/page-container";
 import { PhotoUpload } from "@/components/market/photo-upload";
-import { cropTypes, municipalities } from "@/lib/constants/market";
+import { cropTypes } from "@/lib/constants/market";
+import { useMunicipalities } from "@/hooks/use-municipalities";
 import { toast } from "sonner";
 
 export default function NewListingPage() {
   const router = useRouter();
+  const { municipalities } = useMunicipalities();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [photos, setPhotos] = useState<File[]>([]);
