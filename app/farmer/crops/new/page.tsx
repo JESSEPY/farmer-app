@@ -23,7 +23,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { PageContainer } from "@/components/layout/page-container";
 import { apiClient } from "@/lib/api/client";
-import { CROP_TYPES, MUNICIPALITIES } from "@/lib/types";
+import { CROP_TYPES } from "@/lib/types";
+import { useMunicipalities } from "@/hooks/use-municipalities";
 import type { Season, CreatePlantingInput } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -36,6 +37,7 @@ interface IntercropRow {
 
 export default function NewCropPage() {
   const router = useRouter();
+  const { municipalities } = useMunicipalities();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [season, setSeason] = useState<string | null>("wet");
@@ -213,7 +215,7 @@ export default function NewCropPage() {
                       <SelectValue placeholder="Select municipality" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MUNICIPALITIES.map((mun) => (
+                      {municipalities.map((mun) => (
                         <SelectItem key={mun} value={mun}>
                           {mun}
                         </SelectItem>

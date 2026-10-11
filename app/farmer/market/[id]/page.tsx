@@ -20,7 +20,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageContainer } from "@/components/layout/page-container";
 import { formatPhone, smsHref } from "@/lib/phone";
 import { ImageGallery } from "@/components/market/image-gallery";
-import { cropTypes, municipalities } from "@/lib/constants/market";
+import { cropTypes } from "@/lib/constants/market";
+import { useMunicipalities } from "@/hooks/use-municipalities";
 import { cn } from "@/lib/utils";
 import type { ListingWithFarmer } from "@/lib/types";
 
@@ -40,6 +41,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   const { user } = useAuth();
   const [listing, setListing] = useState<ListingWithFarmer | null>(null);
   const [loading, setLoading] = useState(true);
+  const { municipalities, loading: municipalitiesLoading } = useMunicipalities();
   const [isEditing, setIsEditing] = useState(false);
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
   const [editPhotos, setEditPhotos] = useState<File[]>([]);
@@ -64,7 +66,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
         setListing(fetched);
         if (fetched && new URLSearchParams(window.location.search).get("edit") === "true") {
           setEditCrop(fetched.crop || "");
-          setEditMunicipality(municipalities.includes(fetched.municipality) ? fetched.municipality : "");
+          setEditMunicipality(fetched.municipality || "");
           setEditQuantity(fetched.quantity || "");
           setEditPrice(fetched.price?.toString() || "");
           setEditGrade(fetched.grade || "");
@@ -83,8 +85,8 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
 
   const populateEditFields = (listing: ListingWithFarmer) => {
     setEditCrop(listing.crop || "");
-    // Old listings may use a name that is not a real Masbate municipality: make the seller pick one.
-    setEditMunicipality(municipalities.includes(listing.municipality) ? listing.municipality : "");
+    // Old listings may use a name that is not a real Masbate municipality: saving requires picking a listed one.
+    setEditMunicipality(listing.municipality || "");
     setEditQuantity(listing.quantity || "");
     setEditPrice(listing.price?.toString() || "");
     setEditGrade(listing.grade || "");
@@ -106,7 +108,7 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
   };
 
   const handleSave = async () => {
-    if (!editCrop || !editMunicipality || !editQuantity || !editPrice || !editGrade) {
+    if (!editCrop || !municipalities.includes(editMunicipality) || !editQuantity || !editPrice || !editGrade) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -263,9 +265,9 @@ export default function ListingDetailPage({ params }: ListingDetailProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  {listing && !municipalities.includes(listing.municipality) && (
+                  {listing && !municipalitiesLoading && !municipalities.includes(listing.municipality) && (
                     <p className="text-xs text-amber-600">
-                      &ldquo;{listing.municipality}&rdquo; is not a municipality of Masbate. Please choose the correct one so
+                      &ldquo;{listing.municipality}&rdquo; is not a recognized municipality of Masbate. Please choose the correct one so
                       buyers can find this listing on the map.
                     </p>
                   )}
