@@ -17,7 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { useWeather } from "@/hooks/use-weather";
+import { useWeather, MASBATE_LABEL } from "@/hooks/use-weather";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   sun: Sun,
@@ -87,7 +87,7 @@ export function WeatherWidget() {
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             <p className="text-sm text-muted-foreground mb-1 truncate">
-              {weather.location.timezone}
+              {MASBATE_LABEL}
             </p>
             <div className="flex items-center gap-2 sm:gap-3">
               <IconComponent
