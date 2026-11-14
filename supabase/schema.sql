@@ -18,13 +18,14 @@
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  email TEXT NOT NULL,
+  email TEXT,
   full_name TEXT,
   role TEXT NOT NULL CHECK (role IN ('farmer', 'buyer', 'admin')),
   phone TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE profiles ALTER COLUMN email DROP NOT NULL;
 
 -- Allow the 'admin' role on databases created before it existed.
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
@@ -72,7 +73,7 @@ BEGIN
     new.email,
     new.raw_user_meta_data->>'full_name',
     CASE WHEN new.raw_user_meta_data->>'role' = 'buyer' THEN 'buyer' ELSE 'farmer' END,
-    new.raw_user_meta_data->>'phone'
+    COALESCE(NULLIF(new.phone, ''), new.raw_user_meta_data->>'phone')
   );
   RETURN new;
 END;

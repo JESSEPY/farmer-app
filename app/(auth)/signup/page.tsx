@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Sprout, ShoppingBag, MailCheck } from "lucide-react";
 
 export default function SignupPage() {
+  const [signupMethod, setSignupMethod] = useState<"email" | "phone">("email");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,7 +38,7 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    if (!isValidLocalPhone(phone)) {
+    if ((signupMethod === "phone" || phone) && !isValidLocalPhone(phone)) {
       setError("Enter a valid Philippine mobile number (e.g. 912 345 6789).");
       setLoading(false);
       return;
@@ -49,7 +50,10 @@ export default function SignupPage() {
       return;
     }
 
-    const { error, needsVerification } = await signUp(email, password, role, fullName, toE164(phone));
+    const { error, needsVerification } = await signUp(
+      signupMethod === "email" ? email : toE164(phone),
+      password, role, fullName, phone ? toE164(phone) : "",
+    );
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -114,19 +118,36 @@ export default function SignupPage() {
               required
             />
           </div>
-          <div>
-            <PhoneInput value={phone} onValueChange={setPhone} required />
-            <p className="mt-1 text-xs text-muted-foreground">Buyers and sellers use this to call you.</p>
-          </div>
-          <div>
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+          <fieldset className="space-y-3">
+            <legend className="mb-2 text-sm font-medium">Register with</legend>
+            <div className="flex gap-4">
+              {(["email", "phone"] as const).map((method) => (
+                <label key={method} className="flex items-center gap-2 text-sm">
+                  <input type="radio" name="signupMethod" value={method}
+                    checked={signupMethod === method}
+                    onChange={() => { setSignupMethod(method); setError(""); }} />
+                  {method === "email" ? "Email" : "Phone number"}
+                </label>
+              ))}
+            </div>
+            {signupMethod === "email" && (
+              <Input type="email" placeholder="Email" aria-label="Email"
+                autoComplete="email" value={email}
+                onChange={(e) => setEmail(e.target.value)} required />
+            )}
+            <div>
+              <label htmlFor="signup-phone" className="mb-1 block text-sm">
+                {signupMethod === "phone" ? "Phone number" : "Contact number (optional)"}
+              </label>
+              <PhoneInput id="signup-phone" value={phone} onValueChange={setPhone}
+                required={signupMethod === "phone"} />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {signupMethod === "phone"
+                  ? "Use this number and your password to sign in. No SMS is sent. Your number is not verified. If you forget your password, contact the administrator for help."
+                  : "Buyers and sellers use this to call you. This contact number does not enable phone login."}
+              </p>
+            </div>
+          </fieldset>
           <div>
             <PasswordInput
               placeholder="Password"

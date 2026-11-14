@@ -4,7 +4,7 @@ export type AppRole = UserRole | "admin";
 
 export interface Profile {
   id: string;
-  email: string;
+  email: string | null;
   full_name: string | null;
   phone: string | null;
   role: AppRole;

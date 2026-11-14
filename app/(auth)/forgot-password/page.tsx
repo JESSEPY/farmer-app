@@ -40,6 +40,9 @@ export default function ForgotPasswordPage() {
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Registered with only a phone number? Contact the administrator for help resetting your password. SMS recovery is not available.
+        </p>
         {sent ? (
           <div className="space-y-4">
             <p className="text-sm">

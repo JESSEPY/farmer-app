@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(identifier, password);
     if (error) {
       setError(error.message);
       setLoading(false);
@@ -69,13 +69,16 @@ export default function LoginPage() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div>
             <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              autoComplete="username"
+              aria-label="Email or phone number"
+              placeholder="Email or phone number"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </div>
+          <p className="text-xs text-muted-foreground">Use your registered email or phone number (e.g. 09123456789).</p>
           <div>
             <PasswordInput
               placeholder="Password"

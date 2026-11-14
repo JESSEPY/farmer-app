@@ -109,7 +109,7 @@ export default function FarmerProfilePage() {
                 </div>
                 <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground mt-1">
                   <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{profile?.email}</span>
+                  <span className="text-sm">{profile?.email || "No email address"}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {profile?.phone ? formatPhone(profile.phone) : "No phone number yet"}

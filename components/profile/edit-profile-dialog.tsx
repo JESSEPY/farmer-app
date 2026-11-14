@@ -42,13 +42,13 @@ export function EditProfileDialog() {
       setError("Please enter your name.");
       return;
     }
-    if (!isValidLocalPhone(phone)) {
+    if (phone && !isValidLocalPhone(phone)) {
       setError("Enter a valid Philippine mobile number (e.g. 912 345 6789).");
       return;
     }
 
     setSaving(true);
-    const { error } = await updateProfile({ full_name: name, phone: toE164(phone) });
+    const { error } = await updateProfile({ full_name: name, phone: phone ? toE164(phone) : null });
     setSaving(false);
 
     if (error) {
@@ -85,9 +85,9 @@ export function EditProfileDialog() {
             </div>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="edit-phone">Mobile number</Label>
-              <PhoneInput id="edit-phone" value={phone} onValueChange={setPhone} required />
-              <p className="text-xs text-muted-foreground">Buyers and sellers use this to call you.</p>
+              <Label htmlFor="edit-phone">Contact number (optional)</Label>
+              <PhoneInput id="edit-phone" value={phone} onValueChange={setPhone} />
+              <p className="text-xs text-muted-foreground">Buyers and sellers use this to call you. Changing this contact number does not change your login number.</p>
             </div>
 
             <div className="grid gap-1.5">

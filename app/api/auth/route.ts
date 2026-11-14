@@ -20,7 +20,7 @@ export async function GET() {
 
     return NextResponse.json({
       authenticated: true,
-      user: { id: user.id, email: user.email },
+      user: { id: user.id, email: user.email, phone: user.phone },
       profile,
     });
   } catch (err) {
@@ -33,19 +33,25 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { action, email, password, role, fullName, phone } = body;
+    // Keep existing email-based API callers compatible.
+    const identifier = body.identifier || email || phone;
+    if (["signIn", "signUp"].includes(action) &&
+        (typeof identifier !== "string" || typeof password !== "string" || !identifier.trim() || !password)) {
+      return NextResponse.json({ error: "Email or phone number and password required" }, { status: 400 });
+    }
 
     if (action === "signIn") {
-      if (!email || !password) {
-        return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+      if (!identifier || !password) {
+        return NextResponse.json({ error: "Email or phone number and password required" }, { status: 400 });
       }
 
-      const { user, error } = await signIn(email, password);
+      const supabase = await createClient();
+      const { user, error } = await signIn(identifier, password, supabase);
 
       if (error || !user) {
         return NextResponse.json({ error: error?.message || "Sign in failed" }, { status: 401 });
       }
 
-      const supabase = await createClient();
       const { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -53,29 +59,31 @@ export async function POST(request: NextRequest) {
         .single();
 
       return NextResponse.json({
-        user: { id: user.id, email: user.email },
+        user: { id: user.id, email: user.email, phone: user.phone },
         profile,
       });
     }
 
     if (action === "signUp") {
-      if (!email || !password || !role || !fullName || !phone) {
-        return NextResponse.json({ error: "Email, password, role, fullName, and phone required" }, { status: 400 });
+      if (!identifier || !password || !role || typeof fullName !== "string" || !fullName.trim() || (phone != null && typeof phone !== "string")) {
+        return NextResponse.json({ error: "Email or phone number, password, role, and fullName required" }, { status: 400 });
       }
 
       if (!["farmer", "buyer"].includes(role)) {
         return NextResponse.json({ error: "Invalid role" }, { status: 400 });
       }
 
-      const { user, error } = await signUp(email, password, role as UserRole, fullName, phone);
+      const supabase = await createClient();
+      const { user, error, needsVerification } = await signUp(identifier, password, role as UserRole, fullName, phone || "", supabase);
 
       if (error || !user) {
         return NextResponse.json({ error: error?.message || "Sign up failed" }, { status: 400 });
       }
 
       return NextResponse.json({
-        user: { id: user.id, email: user.email },
-        message: "Account created successfully",
+        user: { id: user.id, email: user.email, phone: user.phone },
+        needsVerification,
+        message: needsVerification ? "Check your email to verify your account" : "Account created successfully",
       });
     }
 
@@ -133,7 +141,7 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { error } = await signOut();
+    const { error } = await signOut(supabase);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
