@@ -1,12 +1,12 @@
 import { createClient } from "@/lib/supabase/client";
 import { Profile, UserRole } from "@/lib/types/auth";
 import type { User } from "@supabase/supabase-js";
-import { parseAuthIdentifier } from "@/lib/auth-identifier";
+import { parseAuthIdentifier, phoneLoginCredentials } from "@/lib/auth-identifier";
 
 export async function signIn(identifier: string, password: string, supabase = createClient()): Promise<{ user: User | null; error: Error | null }> {
   let credentials;
   try {
-    credentials = parseAuthIdentifier(identifier);
+    credentials = phoneLoginCredentials(identifier);
   } catch (error) {
     return { user: null, error: error as Error };
   }
@@ -14,29 +14,28 @@ export async function signIn(identifier: string, password: string, supabase = cr
   return { user: data?.user || null, error };
 }
 
-export async function signUp(identifier: string, password: string, role: UserRole, fullName: string, phone: string, supabase = createClient()): Promise<{ user: User | null; error: Error | null; needsVerification: boolean }> {
+export async function signUp(identifier: string, password: string, role: UserRole, fullName: string, supabase = createClient()): Promise<{ user: User | null; error: Error | null }> {
   let credentials;
   try {
-    credentials = parseAuthIdentifier(identifier);
+    credentials = phoneLoginCredentials(identifier);
   } catch (error) {
-    return { user: null, error: error as Error, needsVerification: false };
+    return { user: null, error: error as Error };
   }
   const { data, error } = await supabase.auth.signUp({
     ...credentials,
     password,
-    options: { data: { full_name: fullName, role, phone: "phone" in credentials ? credentials.phone : phone || null } },
+    options: { data: { full_name: fullName, role, phone: parseAuthIdentifier(identifier).phone } },
   });
 
   // The profile row is created by the handle_new_user database trigger (from the
-  // metadata above). Email confirmation may be required before sign in.
-  if (!error && data?.user && !data.session && "phone" in credentials) {
+  // metadata above). The internal email login must return a session with confirmations disabled.
+  if (!error && data?.user && !data.session) {
     return {
       user: data.user,
-      error: new Error("Phone signup requires SMS confirmation on this server. Contact the administrator to finish setting up your account."),
-      needsVerification: false,
+      error: new Error("Account setup requires administrator assistance. Please contact the administrator before trying again."),
     };
   }
-  return { user: data?.user || null, error, needsVerification: !error && !!data?.user && !data.session };
+  return { user: data?.user || null, error };
 }
 
 export async function signOut(supabase = createClient()): Promise<{ error: Error | null }> {
@@ -52,14 +51,25 @@ export async function getUser(): Promise<{ user: User | null; error: Error | nul
 
 export async function getProfile(userId: string): Promise<{ profile: Profile | null; error: Error | null }> {
   const supabase = createClient();
-  const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single();
+  const { data, error } = await supabase.from("profiles").select("id, full_name, phone, role, created_at").eq("id", userId).single();
   return { profile: data as Profile || null, error };
 }
 
-export async function updateProfile(userId: string, updates: Partial<Profile>): Promise<{ profile: Profile | null; error: Error | null }> {
-  const supabase = createClient();
-  const { data, error } = await supabase.from("profiles").update(updates).eq("id", userId).select().single();
-  return { profile: data as Profile || null, error };
+export async function updateProfile(updates: { full_name: string; phone: string }): Promise<{ profile: Profile | null; user?: User; error: Error | null }> {
+  try {
+    const response = await fetch("/api/auth", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName: updates.full_name, phone: updates.phone }),
+    });
+    const result = await response.json();
+    if (!response.ok) return { profile: null, error: new Error(result.error || "Could not save your profile.") };
+    const supabase = createClient();
+    const { data } = await supabase.auth.refreshSession();
+    return { profile: result.profile, user: data.user || undefined, error: null };
+  } catch {
+    return { profile: null, error: new Error("Could not save your profile. Please check your connection and try again.") };
+  }
 }
 
 export async function getCurrentUser(): Promise<{ user: User | null; profile: Profile | null; error: Error | null }> {

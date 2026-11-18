@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { signIn, signUp, signOut } from "@/lib/services/auth-service";
 import { UserRole } from "@/lib/types/auth";
+import { saveProfile } from "@/lib/server/save-profile";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getLoginPhone } from "@/lib/auth-identifier";
 
 export async function GET() {
   try {
@@ -14,13 +17,13 @@ export async function GET() {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("*")
+      .select("id, full_name, phone, role, created_at")
       .eq("id", user.id)
       .single();
 
     return NextResponse.json({
       authenticated: true,
-      user: { id: user.id, email: user.email, phone: user.phone },
+      user: { id: user.id, phone: getLoginPhone(user) },
       profile,
     });
   } catch (err) {
@@ -32,17 +35,16 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, email, password, role, fullName, phone } = body;
-    // Keep existing email-based API callers compatible.
-    const identifier = body.identifier || email || phone;
+    const { action, password, role, fullName, phone } = body;
+    const identifier = phone || body.identifier;
     if (["signIn", "signUp"].includes(action) &&
         (typeof identifier !== "string" || typeof password !== "string" || !identifier.trim() || !password)) {
-      return NextResponse.json({ error: "Email or phone number and password required" }, { status: 400 });
+      return NextResponse.json({ error: "Phone number and password required" }, { status: 400 });
     }
 
     if (action === "signIn") {
       if (!identifier || !password) {
-        return NextResponse.json({ error: "Email or phone number and password required" }, { status: 400 });
+        return NextResponse.json({ error: "Phone number and password required" }, { status: 400 });
       }
 
       const supabase = await createClient();
@@ -54,19 +56,19 @@ export async function POST(request: NextRequest) {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, full_name, phone, role, created_at")
         .eq("id", user.id)
         .single();
 
       return NextResponse.json({
-        user: { id: user.id, email: user.email, phone: user.phone },
+        user: { id: user.id, phone: getLoginPhone(user) },
         profile,
       });
     }
 
     if (action === "signUp") {
       if (!identifier || !password || !role || typeof fullName !== "string" || !fullName.trim() || (phone != null && typeof phone !== "string")) {
-        return NextResponse.json({ error: "Email or phone number, password, role, and fullName required" }, { status: 400 });
+        return NextResponse.json({ error: "Phone number, password, role, and fullName required" }, { status: 400 });
       }
 
       if (!["farmer", "buyer"].includes(role)) {
@@ -74,16 +76,15 @@ export async function POST(request: NextRequest) {
       }
 
       const supabase = await createClient();
-      const { user, error, needsVerification } = await signUp(identifier, password, role as UserRole, fullName, phone || "", supabase);
+      const { user, error } = await signUp(identifier, password, role as UserRole, fullName, supabase);
 
       if (error || !user) {
         return NextResponse.json({ error: error?.message || "Sign up failed" }, { status: 400 });
       }
 
       return NextResponse.json({
-        user: { id: user.id, email: user.email, phone: user.phone },
-        needsVerification,
-        message: needsVerification ? "Check your email to verify your account" : "Account created successfully",
+        user: { id: user.id, phone: getLoginPhone(user) },
+        message: "Account created successfully",
       });
     }
 
@@ -104,28 +105,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { fullName, phone } = body;
-
-    const updates: Record<string, unknown> = {};
-    if (fullName) updates.full_name = fullName;
-    if (phone !== undefined) updates.phone = phone;
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "Invalid profile details" }, { status: 400 });
     }
-
-    const { data: profile, error } = await supabase
-      .from("profiles")
-      .update(updates)
-      .eq("id", user.id)
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-
-    return NextResponse.json({ profile });
+    const result = await saveProfile(supabase, createAdminClient, user, body);
+    return NextResponse.json(result.error ? { error: result.error } : { profile: result.profile }, { status: result.status });
   } catch (err) {
     console.error("Auth PUT error:", err);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });

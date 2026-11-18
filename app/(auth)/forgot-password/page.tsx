@@ -1,77 +1,25 @@
-"use client";
-
-import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [supabase] = useState(() => createClient());
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setSent(true);
-    }
-    setLoading(false);
-  };
-
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle>Forgot Password</CardTitle>
-        <CardDescription>
-          Enter your email and we&apos;ll send you a link to reset your password
-        </CardDescription>
+        <CardDescription>Get help accessing your account</CardDescription>
       </CardHeader>
-      <CardContent>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Registered with only a phone number? Contact the administrator for help resetting your password. SMS recovery is not available.
+      <CardContent className="space-y-4">
+        <p className="text-sm">
+          Contact your Kita-Ani administrator to reset your password. Have your registered
+          phone number ready. The administrator will need to confirm you own the account.
         </p>
-        {sent ? (
-          <div className="space-y-4">
-            <p className="text-sm">
-              If an account exists for <strong>{email}</strong>, a reset link is on its way. Open it in this same browser.
-            </p>
-            <Link href="/login" className="block text-center text-sm text-primary hover:underline">
-              Back to sign in
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send Reset Link"}
-            </Button>
-            <p className="text-center text-sm">
-              <Link href="/login" className="text-primary hover:underline">
-                Back to sign in
-              </Link>
-            </p>
-          </form>
-        )}
+        <p className="text-sm text-muted-foreground">
+          If you have an older account and cannot sign in with your phone number,
+          ask the administrator to link your number to your existing account.
+        </p>
+        <Link href="/login" className="block text-center text-sm text-primary hover:underline">
+          Back to sign in
+        </Link>
       </CardContent>
     </Card>
   );

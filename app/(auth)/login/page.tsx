@@ -69,16 +69,16 @@ export default function LoginPage() {
           {error && <p className="text-sm text-red-500">{error}</p>}
           <div>
             <Input
-              type="text"
+              type="tel"
               autoComplete="username"
-              aria-label="Email or phone number"
-              placeholder="Email or phone number"
+              aria-label="Phone number"
+              placeholder="Phone number"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               required
             />
           </div>
-          <p className="text-xs text-muted-foreground">Use your registered email or phone number (e.g. 09123456789).</p>
+          <p className="text-xs text-muted-foreground">Use your registered phone number (e.g. 09123456789).</p>
           <div>
             <PasswordInput
               placeholder="Password"

@@ -19,17 +19,17 @@ const one = (v: unknown) => (Array.isArray(v) ? v[0] : v) as Row | null | undefi
 export async function loadDataset(supabase: Supabase, type: DatasetType): Promise<Dataset> {
   if (type === "farmers") {
     const [farmers, plantings, listings] = await Promise.all([
-      fetchAll<Row>((a, b) => supabase.from("profiles").select("id, full_name, phone, email, created_at")
+      fetchAll<Row>((a, b) => supabase.from("profiles").select("id, full_name, phone, created_at")
         .eq("role", "farmer").order("created_at", { ascending: false }).range(a, b)),
       fetchAll<Row>((a, b) => supabase.from("plantings").select("farmer_id, area_ha").range(a, b)),
       fetchAll<Row>((a, b) => supabase.from("listings").select("farmer_id").range(a, b)),
     ]);
     const mine = (arr: Row[], id: string) => arr.filter((r) => r.farmer_id === id);
     return {
-      headers: ["Name", "Phone", "Email", "Joined", "Plantings", "Total area (ha)", "Listings"],
+      headers: ["Name", "Phone", "Joined", "Plantings", "Total area (ha)", "Listings"],
       rows: farmers.map((f) => {
         const p = mine(plantings, f.id);
-        return [f.full_name, f.phone, f.email, f.created_at, p.length,
+        return [f.full_name, f.phone, f.created_at, p.length,
           p.reduce((n, x) => n + (Number(x.area_ha) || 0), 0), mine(listings, f.id).length];
       }),
     };

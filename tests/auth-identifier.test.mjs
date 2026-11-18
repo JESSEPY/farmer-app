@@ -1,9 +1,22 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseAuthIdentifier } from "../lib/auth-identifier.ts";
+import { parseAuthIdentifier, phoneLoginCredentials, getLoginPhone } from "../lib/auth-identifier.ts";
 
-test("preserves existing email identifiers and trims surrounding whitespace", () => {
-  assert.deepEqual(parseAuthIdentifier("  farmer@example.com  "), { email: "farmer@example.com" });
+test("all number formats map to the same hidden login ID", () => {
+  for (const input of ["09123456789", "+63 912 345 6789", "639123456789"]) {
+    assert.deepEqual(phoneLoginCredentials(input), { email: "phone-639123456789@phone.kita-ani.invalid" });
+  }
+  assert.throws(() => phoneLoginCredentials("phone-639123456789@phone.kita-ani.invalid"));
+});
+
+test("login phone comes from the Auth login identity, not editable contact metadata", () => {
+  assert.equal(getLoginPhone({ email: "phone-639123456789@phone.kita-ani.invalid", phone: "+639987654321" }), "+639123456789");
+  assert.equal(getLoginPhone({ phone: "+639123456789" }), "+639123456789");
+  assert.equal(getLoginPhone({ email: "legacy@example.com" }), null);
+});
+
+test("rejects email identifiers", () => {
+  assert.throws(() => parseAuthIdentifier("farmer@example.com"));
 });
 
 test("normalizes supported Philippine mobile formats to one Auth identity", () => {

@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Test account details for local development (never commit)
 supabase/demo-accounts.md
+
+# Private account-to-phone migration mappings
+/supabase/phone-login-mappings*.json

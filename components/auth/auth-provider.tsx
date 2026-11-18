@@ -11,9 +11,9 @@ export interface AuthContextType {
   profile: Profile | null;
   loading: boolean;
   signIn: (identifier: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (identifier: string, password: string, role: UserRole, fullName: string, phone: string) => Promise<{ error: Error | null; needsVerification?: boolean }>;
+  signUp: (identifier: string, password: string, role: UserRole, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  updateProfile: (updates: { full_name: string; phone: string | null }) => Promise<{ error: Error | null }>;
+  updateProfile: (updates: { full_name: string; phone: string }) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,20 +57,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return { error };
 };
 
-  const signUp = async (identifier: string, password: string, role: UserRole, fullName: string, phone: string) => {
-  const { user, error, needsVerification } = await signUpUser(identifier, password, role, fullName, phone);
-  if (!error && user && !needsVerification) {
+  const signUp = async (identifier: string, password: string, role: UserRole, fullName: string) => {
+  const { user, error } = await signUpUser(identifier, password, role, fullName);
+  if (!error && user) {
     const { profile } = await getCurrentUser();
     setUser(user);
     setProfile(profile);
   }
-  return { error: error || null, needsVerification };
+  return { error: error || null };
 };
 
-  const updateProfile = async (updates: { full_name: string; phone: string | null }) => {
+  const updateProfile = async (updates: { full_name: string; phone: string }) => {
   if (!user) return { error: new Error("Not signed in") };
-  const { profile: updated, error } = await updateProfileUser(user.id, updates);
-  if (!error && updated) setProfile(updated);
+  const { profile: updated, user: updatedUser, error } = await updateProfileUser(updates);
+  if (!error && updated) {
+    setProfile(updated);
+    if (updatedUser) setUser(updatedUser);
+  }
   return { error };
 };
 

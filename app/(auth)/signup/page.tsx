@@ -7,18 +7,12 @@ import { useAuth, UserRole } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PhoneInput } from "@/components/ui/phone-input";
-import { isValidLocalPhone, toE164 } from "@/lib/phone";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sprout, ShoppingBag, MailCheck } from "lucide-react";
+import { Sprout, ShoppingBag } from "lucide-react";
 
 export default function SignupPage() {
-  const [signupMethod, setSignupMethod] = useState<"email" | "phone">("email");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showVerifyModal, setShowVerifyModal] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<UserRole>("farmer");
@@ -38,31 +32,16 @@ export default function SignupPage() {
     setLoading(true);
     setError("");
 
-    if ((signupMethod === "phone" || phone) && !isValidLocalPhone(phone)) {
-      setError("Enter a valid Philippine mobile number (e.g. 912 345 6789).");
-      setLoading(false);
-      return;
-    }
-
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       setLoading(false);
       return;
     }
 
-    const { error, needsVerification } = await signUp(
-      signupMethod === "email" ? email : toE164(phone),
-      password, role, fullName, phone ? toE164(phone) : "",
-    );
+    const { error } = await signUp(phone, password, role, fullName);
     if (error) {
       setError(error.message);
       setLoading(false);
-      return;
-    }
-
-    if (needsVerification) {
-      setLoading(false);
-      setShowVerifyModal(true);
       return;
     }
 
@@ -118,36 +97,15 @@ export default function SignupPage() {
               required
             />
           </div>
-          <fieldset className="space-y-3">
-            <legend className="mb-2 text-sm font-medium">Register with</legend>
-            <div className="flex gap-4">
-              {(["email", "phone"] as const).map((method) => (
-                <label key={method} className="flex items-center gap-2 text-sm">
-                  <input type="radio" name="signupMethod" value={method}
-                    checked={signupMethod === method}
-                    onChange={() => { setSignupMethod(method); setError(""); }} />
-                  {method === "email" ? "Email" : "Phone number"}
-                </label>
-              ))}
-            </div>
-            {signupMethod === "email" && (
-              <Input type="email" placeholder="Email" aria-label="Email"
-                autoComplete="email" value={email}
-                onChange={(e) => setEmail(e.target.value)} required />
-            )}
-            <div>
-              <label htmlFor="signup-phone" className="mb-1 block text-sm">
-                {signupMethod === "phone" ? "Phone number" : "Contact number (optional)"}
-              </label>
-              <PhoneInput id="signup-phone" value={phone} onValueChange={setPhone}
-                required={signupMethod === "phone"} />
-              <p className="mt-1 text-xs text-muted-foreground">
-                {signupMethod === "phone"
-                  ? "Use this number and your password to sign in. No SMS is sent. Your number is not verified. If you forget your password, contact the administrator for help."
-                  : "Buyers and sellers use this to call you. This contact number does not enable phone login."}
-              </p>
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="signup-phone" className="mb-1 block text-sm">Phone number</label>
+            <Input id="signup-phone" type="tel" autoComplete="tel"
+              placeholder="09123456789" value={phone}
+              onChange={(e) => setPhone(e.target.value)} required />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Use your phone number and password to sign in. Buyers and sellers can also use this number to contact you.
+            </p>
+          </div>
           <div>
             <PasswordInput
               placeholder="Password"
@@ -176,23 +134,6 @@ export default function SignupPage() {
         </form>
       </CardContent>
 
-      <Dialog open={showVerifyModal} onOpenChange={setShowVerifyModal}>
-        <DialogContent>
-          <DialogHeader>
-            <div className="mb-1 flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <MailCheck className="size-5" />
-            </div>
-            <DialogTitle>Check your email</DialogTitle>
-            <DialogDescription>
-              We sent a verification link to <span className="font-medium text-foreground">{email}</span>.
-              Click the link in the email to verify your account, then sign in.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button onClick={() => router.push("/login")}>Go to Sign In</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }
