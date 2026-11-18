@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MapPin, Settings, Bell, Moon, Languages, ShoppingCart } from "lucide-react";
+import { Settings, Bell, Moon, Languages, ShoppingCart } from "lucide-react";
 import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,7 +27,7 @@ const settings = [
 ];
 
 export default function BuyerProfilePage() {
-  const { user, profile, loading, signOut } = useAuth();
+  const { profile, loading, signOut } = useAuth();
   const router = useRouter();
 
   const [totalListings, setTotalListings] = useState("-");
@@ -39,7 +39,7 @@ export default function BuyerProfilePage() {
       .catch(() => {});
   }, []);
 
-  const displayName = profile?.full_name || user?.email?.split("@")[0] || "User";
+  const displayName = profile?.full_name || profile?.phone || "User";
   const initials = displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
   const memberSince = profile?.created_at ? new Date(profile.created_at).getFullYear().toString() : "2024";
 
@@ -90,10 +90,6 @@ export default function BuyerProfilePage() {
                     <ShoppingCart className="w-3 h-3 mr-1" />
                     Buyer
                   </Badge>
-                </div>
-                <div className="flex items-center justify-center sm:justify-start gap-2 text-muted-foreground mt-1">
-                  <MapPin className="w-4 h-4" />
-                  <span className="text-sm">{profile?.email}</span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
                   {profile?.phone ? formatPhone(profile.phone) : "No phone number yet"}

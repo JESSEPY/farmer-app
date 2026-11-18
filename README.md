@@ -2,6 +2,9 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+For phone-only signup, apply the migration and Supabase provider settings in
+[docs/phone-auth.md](docs/phone-auth.md) before deployment.
+
 First, run the development server:
 
 ```bash

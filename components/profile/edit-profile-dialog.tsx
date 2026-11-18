@@ -5,7 +5,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PhoneInput } from "@/components/ui/phone-input";
 import {
   Dialog,
   DialogContent,
@@ -14,10 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { isValidLocalPhone, sanitizeLocalPhone, toE164 } from "@/lib/phone";
+import { getLoginPhone, parseAuthIdentifier } from "@/lib/auth-identifier";
 
 export function EditProfileDialog() {
-  const { profile, updateProfile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -25,9 +24,10 @@ export function EditProfileDialog() {
   const [saving, setSaving] = useState(false);
 
   const handleOpenChange = (next: boolean) => {
+    if (saving) return;
     if (next) {
       setFullName(profile?.full_name ?? "");
-      setPhone(sanitizeLocalPhone(profile?.phone ?? ""));
+      setPhone((user && getLoginPhone(user)) || profile?.phone || "");
       setError("");
     }
     setOpen(next);
@@ -42,13 +42,16 @@ export function EditProfileDialog() {
       setError("Please enter your name.");
       return;
     }
-    if (!isValidLocalPhone(phone)) {
-      setError("Enter a valid Philippine mobile number (e.g. 912 345 6789).");
+    let loginPhone: string;
+    try {
+      loginPhone = parseAuthIdentifier(phone).phone;
+    } catch {
+      setError("Enter a valid Philippine mobile number (e.g. 09123456789).");
       return;
     }
 
     setSaving(true);
-    const { error } = await updateProfile({ full_name: name, phone: toE164(phone) });
+    const { error } = await updateProfile({ full_name: name, phone: loginPhone });
     setSaving(false);
 
     if (error) {
@@ -80,19 +83,16 @@ export function EditProfileDialog() {
                 id="edit-full-name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
+                disabled={saving}
                 required
               />
             </div>
 
             <div className="grid gap-1.5">
-              <Label htmlFor="edit-phone">Mobile number</Label>
-              <PhoneInput id="edit-phone" value={phone} onValueChange={setPhone} required />
-              <p className="text-xs text-muted-foreground">Buyers and sellers use this to call you.</p>
-            </div>
-
-            <div className="grid gap-1.5">
-              <Label htmlFor="edit-email">Email</Label>
-              <Input id="edit-email" value={profile?.email ?? ""} disabled readOnly />
+              <Label htmlFor="edit-phone">Phone number</Label>
+              <Input id="edit-phone" type="tel" autoComplete="tel" placeholder="09123456789"
+                value={phone} onChange={(e) => setPhone(e.target.value)} required disabled={saving} />
+              <p className="text-xs text-muted-foreground">This is also your login number. After saving, use the new number with your existing password.</p>
             </div>
 
             <DialogFooter>

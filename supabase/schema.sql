@@ -18,13 +18,14 @@
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
-  email TEXT NOT NULL,
+  email TEXT,
   full_name TEXT,
   role TEXT NOT NULL CHECK (role IN ('farmer', 'buyer', 'admin')),
   phone TEXT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE profiles ALTER COLUMN email DROP NOT NULL;
 
 -- Allow the 'admin' role on databases created before it existed.
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
@@ -72,7 +73,7 @@ BEGIN
     new.email,
     new.raw_user_meta_data->>'full_name',
     CASE WHEN new.raw_user_meta_data->>'role' = 'buyer' THEN 'buyer' ELSE 'farmer' END,
-    new.raw_user_meta_data->>'phone'
+    COALESCE(NULLIF(new.phone, ''), new.raw_user_meta_data->>'phone')
   );
   RETURN new;
 END;
@@ -591,66 +592,65 @@ CREATE POLICY "listings_admin_select" ON listings FOR SELECT USING (public.is_ad
 
 -- ------------------------------------------------------------
 -- 5. ADMIN ACCOUNTS
--- Seeds a default admin login: admin@gmail.com / admin123$
--- !! This password is committed to the repo. Change it (Supabase ->
--- Authentication -> Users) before real users or real farmer data are
--- on this project.
--- Re-running is safe: an existing account is never recreated or reset.
--- ------------------------------------------------------------
-CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA extensions;
+-- Create an account through phone signup, then promote its Auth UUID below.
+-- Existing administrators keep their roles. Migrate their internal login IDs
+-- before rollout; keep Email enabled with confirmations off. See docs/phone-auth.md.
+-- UPDATE public.profiles SET role = 'admin' WHERE id = '<auth-user-uuid>';
 
-DO $seed$
-DECLARE
-  admin_email TEXT := 'admin@gmail.com';
-  admin_password TEXT := 'admin123$';
-  new_id UUID := gen_random_uuid();
-BEGIN
-  IF EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = lower(admin_email)) THEN
-    RAISE NOTICE 'Admin auth user already exists, skipped: %', admin_email;
-  ELSE
-    -- The on_auth_user_created trigger creates the matching profile row.
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
-      raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
-      confirmation_token, recovery_token, email_change, email_change_token_new
-    ) VALUES (
-      '00000000-0000-0000-0000-000000000000', new_id, 'authenticated', 'authenticated',
-      admin_email, extensions.crypt(admin_password, extensions.gen_salt('bf')), now(),
-      '{"provider":"email","providers":["email"]}'::jsonb,
-      '{"full_name":"Admin"}'::jsonb, now(), now(),
-      '', '', '', ''
-    );
-    INSERT INTO auth.identities (
-      id, user_id, identity_data, provider, provider_id,
-      last_sign_in_at, created_at, updated_at
-    ) VALUES (
-      gen_random_uuid(), new_id,
-      jsonb_build_object('sub', new_id::text, 'email', admin_email, 'email_verified', true),
-      'email', new_id::text, now(), now(), now()
-    );
-    RAISE NOTICE 'Created admin auth user: %', admin_email;
-  END IF;
-END $seed$;
+-- 6. Keep login and profile phone numbers synchronized
+-- Atomic sync for phone usernames backed by internal email IDs. Safe to rerun.
+BEGIN;
 
--- Promote accounts to admin. Add more emails to the list if needed.
--- Already-admin accounts are skipped; emails with no account only raise a notice.
-DO $$
-DECLARE
-  admin_emails TEXT[] := ARRAY['admin@gmail.com'];
-  e TEXT;
-  n INTEGER;
+CREATE OR REPLACE FUNCTION public.sync_login_phone_profile()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE login_digits TEXT;
 BEGIN
-  FOREACH e IN ARRAY admin_emails LOOP
-    IF EXISTS (SELECT 1 FROM public.profiles WHERE lower(email) = lower(e) AND role = 'admin') THEN
-      RAISE NOTICE 'Already admin, skipped: %', e;
-    ELSE
-      UPDATE public.profiles SET role = 'admin' WHERE lower(email) = lower(e);
-      GET DIAGNOSTICS n = ROW_COUNT;
-      IF n = 0 THEN
-        RAISE NOTICE 'No account found for %, sign up first then re-run', e;
-      ELSE
-        RAISE NOTICE 'Promoted to admin: %', e;
-      END IF;
+  login_digits := substring(lower(new.email) from '^phone-(639[0-9]{9})@phone[.]kita-ani[.]invalid$');
+  IF login_digits IS NOT NULL THEN
+    UPDATE public.profiles
+    SET phone = '+' || login_digits,
+        email = new.email,
+        full_name = COALESCE(NULLIF(btrim(new.raw_user_meta_data->>'full_name'), ''), full_name)
+    WHERE id = new.id;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'Cannot change login without an existing profile';
     END IF;
-  END LOOP;
-END $$;
+  END IF;
+  RETURN new;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS sync_login_phone_profile ON auth.users;
+CREATE TRIGGER sync_login_phone_profile AFTER UPDATE OF email ON auth.users
+FOR EACH ROW EXECUTE FUNCTION public.sync_login_phone_profile();
+
+-- Block direct profile writes that would diverge from an internal login ID.
+CREATE OR REPLACE FUNCTION public.enforce_login_phone_profile()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
+DECLARE login_digits TEXT;
+BEGIN
+  SELECT substring(lower(u.email) from '^phone-(639[0-9]{9})@phone[.]kita-ani[.]invalid$')
+  INTO login_digits FROM auth.users u WHERE u.id = new.id;
+  IF login_digits IS NOT NULL AND new.phone IS DISTINCT FROM ('+' || login_digits) THEN
+    RAISE EXCEPTION 'Change your login phone through Edit Profile';
+  END IF;
+  RETURN new;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS enforce_login_phone_profile ON public.profiles;
+CREATE TRIGGER enforce_login_phone_profile BEFORE INSERT OR UPDATE OF phone ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.enforce_login_phone_profile();
+
+CREATE OR REPLACE FUNCTION public.phone_login_sync_ready()
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER SET search_path = '' AS $$
+  SELECT count(*) = 2 FROM pg_catalog.pg_trigger
+  WHERE NOT tgisinternal AND tgenabled = 'O' AND (
+    (tgname = 'sync_login_phone_profile' AND tgrelid = 'auth.users'::regclass) OR
+    (tgname = 'enforce_login_phone_profile' AND tgrelid = 'public.profiles'::regclass)
+  );
+$$;
+REVOKE ALL ON FUNCTION public.phone_login_sync_ready() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.phone_login_sync_ready() TO authenticated;
+
+COMMIT;
